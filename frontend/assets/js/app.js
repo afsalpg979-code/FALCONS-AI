@@ -180,10 +180,11 @@ document.querySelectorAll(".side-item").forEach((item) => {
   item.addEventListener("click", () => {
     document.querySelectorAll(".side-item").forEach((x) => x.classList.remove("active"));
     item.classList.add("active");
-    const action = sideActions[item.textContent.trim()];
+    const label = item.textContent.trim().split(/\s+/).slice(1).join(" ");
+    const action = sideActions[label];
     if (action) {
       action();
-      if (item.textContent.trim() === "Conversations") loadConversations();
+      if (label === "Conversations") loadConversations();
     }
     sidebar.classList.remove("open");
   });
