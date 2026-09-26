@@ -57,15 +57,23 @@ function injectEnhancements() {
   toolsNav.className = "side-item";
   toolsNav.innerHTML = "<span>⚡</span> Tools";
   const nav = document.querySelector(".sidebar nav");
+  const memoryNav = document.createElement("button");
+  memoryNav.className = "side-item";
+  memoryNav.innerHTML = "<span>◈</span> Memory";
+
   const settingsItem = Array.from(document.querySelectorAll(".side-item")).find(function(item) {
     return item.textContent.includes("Settings");
   });
-  if (nav && settingsItem) nav.insertBefore(toolsNav, settingsItem);
 
-  bindAuthUI(authTop, toolsNav);
+  if (nav && settingsItem) {
+    nav.insertBefore(toolsNav, settingsItem);
+    nav.insertBefore(memoryNav, settingsItem);
+  }
+
+  bindAuthUI(authTop, toolsNav, memoryNav);
 }
 
-function bindAuthUI(authTop, toolsNav) {
+function bindAuthUI(authTop, toolsNav, memoryNav) {
   const overlay = document.getElementById("authOverlay");
   document.getElementById("authClose").addEventListener("click", function() {
     overlay.classList.remove("open");
@@ -114,6 +122,14 @@ function bindAuthUI(authTop, toolsNav) {
     sidebar.classList.remove("open");
     if (!currentUser) return openAuth("login");
     openToolsWorkspace();
+  });
+
+  memoryNav.addEventListener("click", function() {
+    document.querySelectorAll(".side-item").forEach(function(x) { x.classList.remove("active"); });
+    memoryNav.classList.add("active");
+    sidebar.classList.remove("open");
+    if (!currentUser) return openAuth("login");
+    openMemoryWorkspace();
   });
 }
 
@@ -193,11 +209,15 @@ function clearMessages() {
 
 async function api(path, options) {
   const opts = options || {};
-  const headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
-  const response = await fetch(API_BASE + path, Object.assign({}, opts, {
-    headers: headers,
-    credentials: "include"
-  }));
+  const request = Object.assign({}, opts, { credentials: "include" });
+
+  if (opts.body instanceof FormData) {
+    request.headers = opts.headers || {};
+  } else {
+    request.headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
+  }
+
+  const response = await fetch(API_BASE + path, request);
   const data = await response.json().catch(function() { return {}; });
   if (!response.ok) {
     const error = new Error(data.error || ("API error " + response.status));
@@ -343,7 +363,7 @@ const sideActions = {
     openWorkspace("CONVERSATIONS", '<div id="conversationList" class="conversation-list"></div>');
   },
   Files: function() {
-    openWorkspace("FILES", '<div class="file-panel"><p>File workspace is ready. PDF/image/document processing is the next file module.</p><label class="file-select"><input id="panelFileInput" type="file" multiple> SELECT FILES</label><div id="panelFileList" class="file-list"></div></div>');
+    openFilesWorkspace();
   },
   Settings: function() {
     openSettingsWorkspace();
@@ -381,6 +401,68 @@ function openSettingsWorkspace() {
   document.getElementById("profileName").value = currentUser.name || "";
   document.getElementById("profileBio").value = currentUser.bio || "";
   document.getElementById("apiEndpoint").value = API_BASE;
+}
+
+async function openMemoryWorkspace() {
+  openWorkspace(
+    "LONG-TERM MEMORY",
+    '<div class="profile-form">' +
+      '<label>MEMORY / FACT<input id="memoryContent" maxlength="1000" placeholder="Example: I prefer concise answers."></label>' +
+      '<label>IMPORTANCE<select id="memoryImportance"><option value="1">1 — Low</option><option value="2">2</option><option value="3" selected>3 — Normal</option><option value="4">4</option><option value="5">5 — High</option></select></label>' +
+      '<button id="memorySave" class="profile-save">SAVE MEMORY</button>' +
+    '</div>' +
+    '<div class="status-panel" style="margin-top:14px"><div class="status-line"><span>CURRENT CHAT SUMMARY</span><b>' +
+      (currentConversationId ? "AVAILABLE" : "START A CHAT") +
+    '</b></div></div>' +
+    '<button id="summarySave" class="profile-save" style="margin-top:10px">SUMMARIZE CURRENT CHAT</button>' +
+    '<div id="memoryList" class="conversation-list" style="margin-top:14px"></div>'
+  );
+
+  await loadMemoryList();
+}
+
+async function loadMemoryList() {
+  const list = document.getElementById("memoryList");
+  if (!list) return;
+
+  try {
+    const data = await api("/memory");
+    list.innerHTML = "";
+
+    if (!data.memories.length) {
+      list.textContent = "No long-term memories saved.";
+      return;
+    }
+
+    data.memories.forEach(function(memory) {
+      const item = document.createElement("div");
+      item.className = "conversation-item";
+      item.style.display = "flex";
+      item.style.justifyContent = "space-between";
+      item.style.gap = "10px";
+
+      const text = document.createElement("span");
+      text.textContent = "#" + memory.id + " [" + memory.memory_type + "] " + memory.content;
+      item.appendChild(text);
+
+      const remove = document.createElement("button");
+      remove.className = "auth-badge";
+      remove.textContent = "DELETE";
+      remove.addEventListener("click", async function() {
+        try {
+          await api("/memory/" + memory.id, { method: "DELETE" });
+          await loadMemoryList();
+        } catch (error) {
+          addMessage(error.message, "ai");
+        }
+      });
+
+      item.appendChild(remove);
+      list.appendChild(item);
+    });
+  } catch (error) {
+    list.textContent = error.message;
+  }
 }
 
 function openToolsWorkspace() {
@@ -422,6 +504,94 @@ function openToolsWorkspace() {
   bindToolForm("apiGetForm", "api_get", function() {
     return { url: document.getElementById("apiGetUrl").value };
   }, "apiGetResult");
+}
+
+async function analyzeFile(file) {
+  typing.classList.add("show");
+  try {
+    const form = new FormData();
+    form.append("file", file);
+    form.append(
+      "question",
+      promptInput.value.trim() || "Analyze this file and provide a clear summary, important details, and useful next steps."
+    );
+
+    const data = await api("/files/analyze", {
+      method: "POST",
+      body: form
+    });
+
+    addMessage("FILE: " + file.name + "\n\n" + data.analysis.result, "ai");
+    fileName.textContent = file.name + " analyzed successfully.";
+  } catch (error) {
+    addMessage("FILE PROCESSING: " + error.message, "ai");
+  } finally {
+    typing.classList.remove("show");
+  }
+}
+
+function openFilesWorkspace() {
+  openWorkspace(
+    "FILES + DOCUMENT INTELLIGENCE",
+    '<div class="file-panel">' +
+      '<p>Upload PDF, DOCX, TXT, Markdown, CSV, JSON, PNG, JPG, WEBP, or GIF files. FALCONS sends the selected file to the backend for AI analysis.</p>' +
+      '<label class="file-select"><input id="panelFileInput" type="file" accept=".pdf,.docx,.txt,.md,.csv,.json,.png,.jpg,.jpeg,.webp,.gif" multiple> SELECT FILES</label>' +
+      '<div id="panelFileList" class="file-list"></div>' +
+    '</div>'
+  );
+
+  const input = document.getElementById("panelFileInput");
+  input.addEventListener("change", async function() {
+    if (!currentUser || !input.files.length) return;
+    const list = document.getElementById("panelFileList");
+    list.textContent = "PROCESSING " + input.files.length + " FILE(S)...";
+
+    for (const file of Array.from(input.files)) {
+      try {
+        const form = new FormData();
+        form.append("file", file);
+        form.append("question", promptInput.value.trim() || "Analyze this file and provide a clear summary, important details, and useful next steps.");
+        const data = await api("/files/analyze", { method: "POST", body: form });
+
+        const item = document.createElement("div");
+        item.textContent = file.name + " — COMPLETE";
+        list.appendChild(item);
+        addMessage("FILE: " + file.name + "\n\n" + data.analysis.result, "ai");
+      } catch (error) {
+        const item = document.createElement("div");
+        item.textContent = file.name + " — " + error.message;
+        list.appendChild(item);
+      }
+    }
+  });
+}
+
+async function loadFileHistory() {
+  const list = document.getElementById("fileHistory");
+  if (!list) return;
+
+  try {
+    const data = await api("/files/history");
+    list.innerHTML = "";
+
+    if (!data.analyses.length) {
+      list.textContent = "No previous file analyses.";
+      return;
+    }
+
+    data.analyses.forEach(function(analysis) {
+      const item = document.createElement("div");
+      item.className = "conversation-item";
+      item.textContent = analysis.filename + " — " + new Date(analysis.created_at).toLocaleString();
+      item.addEventListener("click", function() {
+        addMessage("Previous file analysis: " + analysis.filename + "\n\n" + analysis.result, "ai");
+        closeWorkspace();
+      });
+      list.appendChild(item);
+    });
+  } catch (error) {
+    list.textContent = error.message;
+  }
 }
 
 function bindToolForm(formId, name, getInput, resultId) {
@@ -492,8 +662,16 @@ document.getElementById("attachBtn").addEventListener("click", function() {
   fileInput.click();
 });
 
-fileInput.addEventListener("change", function() {
-  if (fileInput.files.length) fileName.textContent = fileInput.files.length + " file(s) selected.";
+fileInput.addEventListener("change", async function() {
+  if (!fileInput.files.length) return;
+  fileName.textContent = fileInput.files.length + " file(s) selected.";
+  if (!currentUser) return openAuth("login");
+
+  for (const file of Array.from(fileInput.files)) {
+    await analyzeFile(file);
+  }
+
+  fileInput.value = "";
 });
 
 document.getElementById("voiceBtn").addEventListener("click", function() {
@@ -510,6 +688,39 @@ document.getElementById("voiceBtn").addEventListener("click", function() {
 });
 
 document.addEventListener("click", async function(event) {
+  if (event.target.id === "memorySave") {
+    try {
+      const data = await api("/memory", {
+        method: "POST",
+        body: JSON.stringify({
+          content: document.getElementById("memoryContent").value.trim(),
+          importance: Number(document.getElementById("memoryImportance").value)
+        })
+      });
+      document.getElementById("memoryContent").value = "";
+      addMessage("Long-term memory saved: #" + data.memory.id, "ai");
+      await loadMemoryList();
+    } catch (error) {
+      addMessage(error.message, "ai");
+    }
+  }
+
+  if (event.target.id === "summarySave") {
+    if (!currentConversationId) {
+      addMessage("Start a conversation before creating a summary.", "ai");
+      return;
+    }
+    try {
+      const data = await api("/memory/conversation/" + currentConversationId + "/summary", {
+        method: "POST",
+        body: JSON.stringify({})
+      });
+      addMessage("Conversation summary saved:\n\n" + data.summary.summary, "ai");
+    } catch (error) {
+      addMessage("SUMMARY: " + error.message, "ai");
+    }
+  }
+
   if (event.target.id === "profileSave") {
     try {
       const data = await api("/auth/profile", {
