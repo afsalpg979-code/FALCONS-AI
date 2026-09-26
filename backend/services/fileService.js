@@ -7,6 +7,8 @@ const model = process.env.OPENAI_MODEL || "gpt-5.6-luna";
 const MIME_TYPES = new Map([
   [".pdf", "application/pdf"],
   [".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+  [".pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation"],
+  [".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
   [".txt", "text/plain"],
   [".md", "text/markdown"],
   [".csv", "text/csv"],
@@ -37,7 +39,7 @@ export function validateFile({ originalname, mimetype, size }) {
   const expectedMime = MIME_TYPES.get(ext);
 
   if (!expectedMime) {
-    throw new Error("Unsupported file type. Supported: PDF, DOCX, TXT, Markdown, CSV, JSON, PNG, JPG, WEBP, GIF.");
+    throw new Error("Unsupported file type. Supported: PDF, DOCX, PPTX, XLSX, TXT, Markdown, CSV, JSON, PNG, JPG, WEBP, GIF.");
   }
 
   if (mimetype !== expectedMime) {
