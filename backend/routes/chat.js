@@ -7,7 +7,8 @@ import {
   getConversation,
   getConversationSummary,
   getMessages,
-  listMemories
+  listMemories,
+  saveConversationSummary
 } from "../database/database.js";
 import { requireAuth } from "../middleware/auth.js";
 import { generateReply, summarizeConversation } from "../services/aiService.js";
@@ -136,7 +137,6 @@ router.post("/", async (req, res) => {
       const summary = await summarizeConversation(history.slice(-80));
       const reply = "Conversation summary saved:\n\n" + summary;
       const saved = addMessage(conversationId, "assistant", reply);
-      const { saveConversationSummary } = await import("../database/database.js");
       saveConversationSummary(conversationId, req.user.id, summary);
       return res.json({ conversation: getConversation(conversationId, req.user.id), message: saved, summary });
     }
