@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#050807">
+  <title>FALCONS AI</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div class="scanlines"></div>
+  <div class="ambient ambient-1"></div>
+  <div class="ambient ambient-2"></div>
+
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">F</div>
+        <div>
+          <strong>FALCONS</strong>
+          <span>AI COMMAND</span>
+        </div>
+      </div>
+
+      <button class="new-chat" id="newChat"><span>＋</span> NEW SESSION</button>
+
+      <div class="side-title">SYSTEM</div>
+      <nav>
+        <button class="side-item active"><span>◉</span> Command Center</button>
+        <button class="side-item"><span>⌁</span> Conversations</button>
+        <button class="side-item"><span>▣</span> Files</button>
+        <button class="side-item"><span>⚙</span> Settings</button>
+      </nav>
+
+      <div class="side-title">CORE STATUS</div>
+      <div class="status-card">
+        <div class="status-row"><span>NEURAL CORE</span><b>ONLINE</b></div>
+        <div class="bar"><i></i></div>
+        <div class="status-row"><span>MEMORY</span><em>READY</em></div>
+        <div class="status-row"><span>VOICE LINK</span><em>STANDBY</em></div>
+      </div>
+
+      <div class="sidebar-footer"><span class="pulse-dot"></span> FALCONS v1.0 • LOCAL UI</div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="menu-btn" id="menuBtn">☰</button>
+        <div class="system-state"><span class="pulse-dot"></span> SYSTEM ONLINE</div>
+        <div class="top-actions">
+          <span id="clock">00:00:00</span>
+          <button class="icon-btn" title="Notifications">◌</button>
+          <div class="avatar">F</div>
+        </div>
+      </header>
+
+      <section class="dashboard">
+        <div class="hero">
+          <div class="hero-copy">
+            <div class="eyebrow">FALCONS INTELLIGENCE SYSTEM / 01</div>
+            <h1>Good evening.<br><span>I'm FALCONS.</span></h1>
+            <p>Command your AI assistant. Ask a question, start a task, or use voice input.</p>
+          </div>
+
+          <div class="core-wrap">
+            <div class="core-ring ring-a"></div>
+            <div class="core-ring ring-b"></div>
+            <div class="core-ring ring-c"></div>
+            <div class="core">
+              <div class="core-lines"></div>
+              <div class="core-letter">F</div>
+              <div class="core-label">AI CORE</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="quick-grid">
+          <button class="quick-card" data-prompt="Analyze this for me"><span class="q-icon">⌁</span><strong>Analyze</strong><small>Understand information</small></button>
+          <button class="quick-card" data-prompt="Help me write something"><span class="q-icon">✎</span><strong>Create</strong><small>Write and generate</small></button>
+          <button class="quick-card" data-prompt="Help me plan my task"><span class="q-icon">◇</span><strong>Plan</strong><small>Organize your work</small></button>
+          <button class="quick-card" data-prompt="Tell me what you can do"><span class="q-icon">?</span><strong>Explore</strong><small>Discover capabilities</small></button>
+        </div>
+
+        <section class="console">
+          <div class="console-head">
+            <div><span class="terminal-dot"></span> FALCONS CONVERSATION CHANNEL</div>
+            <span class="secure">SECURE // READY</span>
+          </div>
+
+          <div class="messages" id="messages">
+            <div class="message ai">
+              <div class="msg-avatar">F</div>
+              <div class="bubble">
+                <div class="msg-meta">FALCONS <span>JUST NOW</span></div>
+                <p>Systems online. I’m ready for your command.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="typing" id="typing"><span></span><span></span><span></span> FALCONS is processing...</div>
+
+          <form class="composer" id="composer">
+            <button type="button" class="tool-btn" title="Attach file">＋</button>
+            <input id="prompt" autocomplete="off" placeholder="Enter command or ask FALCONS anything...">
+            <button type="button" class="voice-btn" id="voiceBtn" title="Voice input">◉</button>
+            <button type="submit" class="send-btn" title="Send">➤</button>
+          </form>
+          <div class="composer-note">FALCONS can make mistakes. Verify important information.</div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
