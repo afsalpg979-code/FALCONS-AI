@@ -6,6 +6,8 @@ import conversationsRouter from "./routes/conversations.js";
 import chatRouter from "./routes/chat.js";
 import authRouter from "./routes/auth.js";
 import toolsRouter from "./routes/tools.js";
+import filesRouter from "./routes/files.js";
+import memoryRouter from "./routes/memory.js";
 import { isAIConfigured } from "./services/aiService.js";
 import { isAuthConfigured } from "./middleware/auth.js";
 
@@ -34,6 +36,8 @@ app.get("/api/health", (_req, res) => {
     aiConfigured: isAIConfigured(),
     authConfigured: isAuthConfigured(),
     toolsAvailable: true,
+    fileProcessingAvailable: true,
+    longTermMemoryAvailable: true,
     host,
     port,
     time: new Date().toISOString()
@@ -44,12 +48,15 @@ app.use("/api/auth", authRouter);
 app.use("/api/conversations", conversationsRouter);
 app.use("/api/chat", chatRouter);
 app.use("/api/tools", toolsRouter);
+app.use("/api/files", filesRouter);
+app.use("/api/memory", memoryRouter);
 
 app.get("/", (_req, res) => {
   res.json({
     service: "FALCONS AI Backend",
     status: "online",
-    health: "/api/health"
+    health: "/api/health",
+    api: "/api"
   });
 });
 
@@ -60,5 +67,5 @@ app.use((error, _req, res, _next) => {
 });
 
 app.listen(port, host, () => {
-  console.log(`FALCONS backend listening on http://${host}:${port}`);
+  console.log("FALCONS backend listening on http://" + host + ":" + port);
 });
