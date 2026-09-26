@@ -535,12 +535,15 @@ function openFilesWorkspace() {
     "FILES + DOCUMENT INTELLIGENCE",
     '<div class="file-panel">' +
       '<p>Upload PDF, DOCX, TXT, Markdown, CSV, JSON, PNG, JPG, WEBP, or GIF files. FALCONS sends the selected file to the backend for AI analysis.</p>' +
-      '<label class="file-select"><input id="panelFileInput" type="file" accept=".pdf,.docx,.txt,.md,.csv,.json,.png,.jpg,.jpeg,.webp,.gif" multiple> SELECT FILES</label>' +
+      '<label class="file-select"><input id="panelFileInput" type="file" accept=".pdf,.docx,.pptx,.xlsx,.txt,.md,.csv,.json,.png,.jpg,.jpeg,.webp,.gif" multiple> SELECT FILES</label>' +
       '<div id="panelFileList" class="file-list"></div>' +
+      '<div style="margin-top:14px;color:#60766a;font-size:9px;letter-spacing:1px">RECENT ANALYSES</div>' +
+      '<div id="fileHistory" class="file-list"></div>' +
     '</div>'
   );
 
   const input = document.getElementById("panelFileInput");
+  loadFileHistory();
   input.addEventListener("change", async function() {
     if (!currentUser || !input.files.length) return;
     const list = document.getElementById("panelFileList");
@@ -557,6 +560,7 @@ function openFilesWorkspace() {
         item.textContent = file.name + " — COMPLETE";
         list.appendChild(item);
         addMessage("FILE: " + file.name + "\n\n" + data.analysis.result, "ai");
+        loadFileHistory();
       } catch (error) {
         const item = document.createElement("div");
         item.textContent = file.name + " — " + error.message;
