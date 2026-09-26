@@ -10,22 +10,33 @@ Futuristic JARVIS-inspired AI assistant.
 - Responsive desktop/mobile UI
 - Quick actions and browser voice input
 - Node.js + Express backend
-- OpenAI Responses API integration framework
+- OpenAI Responses API integration
 - SQLite conversations and message memory
 
-### Stage 6 — File workspace foundation
-- Frontend file selection interface
-- File processing architecture ready for PDF/image/document modules
+### Stage 6 — PDF / image / document intelligence
+- Authenticated file uploads
+- PDF analysis
+- DOCX analysis
+- PPTX analysis
+- XLSX analysis
+- TXT / Markdown / CSV / JSON analysis
+- Image understanding for PNG / JPG / WEBP / GIF
+- Custom question per uploaded file
+- File-analysis history stored per user
+- Upload size controls and extension/MIME validation
+- Private file processing through the backend
+
+OpenAI's current Responses API supports image and file inputs, including base64 image data and file data, which FALCONS uses for multimodal analysis. citeturn276890search0turn208638search0
 
 ### Stage 8 — Web + external tools
 - Server-side calculator
-- Live weather through Open-Meteo geocoding + forecast APIs
+- Live weather through Open-Meteo
 - Web search through Tavily when `TAVILY_API_KEY` is configured
 - Current time by IANA timezone
 - Unit conversion
-- HTTPS JSON GET for a small allow-listed set of API hosts
-- Authenticated tool execution endpoint
-- Chat tool commands:
+- HTTPS JSON GET for configured API hosts
+- Authenticated tool execution
+- Chat commands:
   - `/calc 12*(5+2)`
   - `/weather Kochi`
   - `/search latest technology news`
@@ -38,11 +49,25 @@ Futuristic JARVIS-inspired AI assistant.
 - Login
 - Logout
 - HTTP-only authentication cookie
-- User profiles with name and bio
-- Private conversations tied to the signed-in user
-- Legacy ownerless conversations are claimed by the first registered account
-- Protected tool execution
-- Password hashing with bcrypt
+- User profile with name and bio
+- Private conversations
+- User-owned conversation memory
+- bcrypt password hashing
+- Protected tools
+
+### Stage 10 — Advanced long-term assistant
+- Persistent user memories with importance
+- Memory search
+- Memory create/delete management
+- Memory context injected into AI conversations
+- Conversation summaries stored per user
+- Chat commands:
+  - `/remember <fact>`
+  - `/memories`
+  - `/forget <memory_id>`
+  - `/summarize`
+- Dedicated Memory workspace in the frontend
+- Dedicated Files workspace in the frontend
 
 ## Structure
 
@@ -59,12 +84,17 @@ FALCONS-AI/
 │   ├── .env.example
 │   ├── database/database.js
 │   ├── middleware/auth.js
-│   ├── routes/auth.js
-│   ├── routes/chat.js
-│   ├── routes/conversations.js
-│   ├── routes/tools.js
-│   ├── services/aiService.js
-│   ├── services/toolService.js
+│   ├── routes/
+│   │   ├── auth.js
+│   │   ├── chat.js
+│   │   ├── conversations.js
+│   │   ├── files.js
+│   │   ├── memory.js
+│   │   └── tools.js
+│   ├── services/
+│   │   ├── aiService.js
+│   │   ├── fileService.js
+│   │   └── toolService.js
 │   └── data/
 ├── .gitignore
 └── README.md
@@ -72,20 +102,20 @@ FALCONS-AI/
 
 ## Run backend in VS Code
 
-Open the repository folder in VS Code and use the integrated terminal:
-
 ```
 cd backend
 npm install
 copy .env.example .env
 ```
 
-Edit `backend/.env` and set at least:
+Edit `backend/.env`:
 
 ```
 HOST=127.0.0.1
 PORT=3000
 JWT_SECRET=replace_with_a_long_random_secret
+MAX_UPLOAD_MB=8
+MEMORY_LIMIT=50
 ```
 
 To enable real AI:
@@ -103,7 +133,7 @@ TAVILY_API_KEY=your_tavily_key
 
 Never commit `.env`, API keys, or database files.
 
-Start the backend:
+Start:
 
 ```
 npm start
@@ -115,16 +145,10 @@ Expected:
 FALCONS backend listening on http://127.0.0.1:3000
 ```
 
-Health check:
+Health:
 
 ```
 http://127.0.0.1:3000/api/health
-```
-
-The root URL also returns backend status:
-
-```
-http://127.0.0.1:3000/
 ```
 
 ## Frontend
@@ -135,30 +159,65 @@ Use VS Code Live Server and open:
 frontend/index.html
 ```
 
-The frontend talks to:
+The frontend uses:
 
 ```
 http://127.0.0.1:3000/api
 ```
 
-Authentication uses an HTTP-only cookie, so the frontend must be served from one of the configured CORS origins.
+Authentication uses an HTTP-only cookie, so serve the frontend from one of the configured CORS origins.
+
+## File processing
+
+Open the **Files** workspace or use the attachment button.
+
+Supported:
+
+```
+PDF
+DOCX
+PPTX
+XLSX
+TXT
+MD
+CSV
+JSON
+PNG
+JPG / JPEG
+WEBP
+GIF
+```
+
+FALCONS processes file contents through the backend and stores analysis history, not the original uploaded bytes.
+
+## Long-term memory
+
+Use the **Memory** workspace or chat commands:
+
+```
+/remember I prefer concise answers.
+/memories
+/forget 3
+/summarize
+```
+
+Saved memories are attached only to the signed-in user and are supplied as private context to the AI.
 
 ## Security notes
 
-- API keys stay on the backend.
+- API keys remain server-side.
 - Authentication cookies are HTTP-only.
 - Passwords are stored as bcrypt hashes.
-- Conversations are filtered by user ID.
-- The API tool only permits HTTPS URLs on configured allow-listed hosts.
-- Calculator input uses a dedicated parser rather than JavaScript `eval`.
+- Conversations and memories are filtered by user ID.
+- Uploaded files are held in memory for processing and are not written to the repository.
+- Uploads require an allowed extension and matching MIME type.
+- The API tool only permits HTTPS URLs on configured hosts.
+- The calculator uses a dedicated parser rather than JavaScript `eval`.
 - Do not expose arbitrary shell execution from the web UI.
-
-## External services
-
-Weather uses Open-Meteo geocoding and forecast endpoints. Web search requires a configured Tavily API key.
 
 ## Next stages
 
-10. Advanced assistant capabilities and long-term memory
+7. Advanced voice
+10. More autonomous assistant workflows
 11. Android application
 12. Production deployment
