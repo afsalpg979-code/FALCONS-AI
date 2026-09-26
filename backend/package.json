@@ -8,10 +8,13 @@
     "dev": "node --watch server.js"
   },
   "dependencies": {
+    "bcryptjs": "latest",
     "better-sqlite3": "latest",
+    "cookie-parser": "latest",
     "cors": "latest",
     "dotenv": "latest",
     "express": "latest",
+    "jsonwebtoken": "latest",
     "openai": "latest"
   }
 }
