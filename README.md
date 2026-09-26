@@ -26,7 +26,7 @@ Futuristic JARVIS-inspired AI assistant.
 - Upload size controls and extension/MIME validation
 - Private file processing through the backend
 
-OpenAI's current Responses API supports image and file inputs, including base64 image data and file data, which FALCONS uses for multimodal analysis. citeturn276890search0turn208638search0
+OpenAI Responses API file and image inputs are used for multimodal analysis.
 
 ### Stage 8 — Web + external tools
 - Server-side calculator
