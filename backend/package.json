@@ -15,6 +15,7 @@
     "dotenv": "latest",
     "express": "latest",
     "jsonwebtoken": "latest",
+    "multer": "latest",
     "openai": "latest"
   }
 }
