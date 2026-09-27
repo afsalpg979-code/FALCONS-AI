@@ -207,6 +207,71 @@ function clearMessages() {
   messages.innerHTML = "";
 }
 
+let speechEnabled = true;
+let selectedVoice = null;
+
+function loadSpeechVoices() {
+  if (!("speechSynthesis" in window)) return;
+
+  const voices = window.speechSynthesis.getVoices();
+  selectedVoice =
+    voices.find(function(voice) { return /en-IN/i.test(voice.lang); }) ||
+    voices.find(function(voice) { return /en-US/i.test(voice.lang); }) ||
+    voices.find(function(voice) { return /^en/i.test(voice.lang); }) ||
+    voices[0] ||
+    null;
+}
+
+function prepareSpeechText(text) {
+  return String(text || "")
+    .replace(/\x60\x60\x60[\s\S]*?\x60\x60\x60/g, " ")
+    .replace(/https?:\/\/\S+/g, " ")
+    .replace(/[*_#>]/g, " ")
+    .replace(/\[(.*?)\]\(.*?\)/g, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function setSpeakingState(active) {
+  const speakButton = document.getElementById("speakBtn");
+  if (speakButton) speakButton.classList.toggle("is-speaking", active);
+}
+
+function speakText(text) {
+  if (!("speechSynthesis" in window)) {
+    addMessage("Text-to-speech is not supported by this browser.", "ai");
+    return;
+  }
+
+  const cleanText = prepareSpeechText(text);
+  if (!cleanText) return;
+
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(cleanText);
+  if (selectedVoice) utterance.voice = selectedVoice;
+
+  utterance.rate = 0.95;
+  utterance.pitch = 0.95;
+  utterance.volume = 1;
+
+  utterance.onstart = function() { setSpeakingState(true); };
+  utterance.onend = function() { setSpeakingState(false); };
+  utterance.onerror = function() { setSpeakingState(false); };
+
+  window.speechSynthesis.speak(utterance);
+}
+
+function stopSpeaking() {
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  setSpeakingState(false);
+}
+
+if ("speechSynthesis" in window) {
+  loadSpeechVoices();
+  window.speechSynthesis.onvoiceschanged = loadSpeechVoices;
+}
+
 async function api(path, options) {
   const opts = options || {};
   const request = Object.assign({}, opts, { credentials: "include" });
@@ -301,7 +366,14 @@ async function sendMessage(text) {
       body: JSON.stringify({ conversationId: currentConversationId, message: text })
     });
     typing.classList.remove("show");
-    addMessage(data.message.content, "ai");
+
+    const replyText = data.message.content;
+    addMessage(replyText, "ai");
+
+    if (speechEnabled) {
+      speakText(replyText);
+    }
+
     await loadConversations();
   } catch (error) {
     typing.classList.remove("show");
@@ -676,6 +748,22 @@ fileInput.addEventListener("change", async function() {
   }
 
   fileInput.value = "";
+});
+
+document.getElementById("speakBtn").addEventListener("click", function() {
+  const aiMessages = document.querySelectorAll(".message.ai p");
+  const lastAiMessage = aiMessages[aiMessages.length - 1];
+
+  if (!lastAiMessage) {
+    addMessage("There is no FALCONS reply to speak yet.", "ai");
+    return;
+  }
+
+  speakText(lastAiMessage.textContent);
+});
+
+document.getElementById("stopSpeakBtn").addEventListener("click", function() {
+  stopSpeaking();
 });
 
 document.getElementById("voiceBtn").addEventListener("click", function() {
