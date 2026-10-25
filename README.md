@@ -89,6 +89,21 @@ OpenAI Responses API file and image inputs are used for multimodal analysis.
 - Dedicated Memory workspace in the frontend
 - Dedicated Files workspace in the frontend
 
+## Pocket Money — target management
+
+The standalone Pocket Money workspace is available at `frontend/pocket-money.html`.
+
+- Create multiple savings goals or payment-obligation targets.
+- Set a target amount, starting month, and deadline.
+- Record the starting amount already saved or already paid.
+- Add dated contributions with optional notes; review recent contribution history.
+- Edit target details and delete a target with its history.
+- View target progress, remaining amount, deadline status, and a simple monthly contribution estimate.
+- Include target contributions in monthly reports and CSV exports.
+- Include target fields and contribution history in JSON backups.
+
+Target amounts are stored in this browser's local storage. They are not yet synced to the FALCONS AI Node.js backend or shared between devices. The monthly contribution estimate is a planning calculation, not an affordability guarantee. The existing salary and expense data should be entered before relying on a target schedule.
+
 ## Structure
 
 ```
