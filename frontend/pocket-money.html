@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#102b22">
+<meta name="description" content="Track your monthly salary, budget, expenses, savings goals and investments in one private pocket money dashboard.">
+<meta name="application-name" content="Pocket Money">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon.svg">
 <title>Pocket Money — Salary & Savings</title>
 <style>
 :root{--bg:#f4f7f3;--panel:#fff;--ink:#172b22;--muted:#75837a;--line:#e3eae4;--green:#176b4b;--mint:#e5f5ec;--orange:#e69b4a;--red:#cf5d57;--shadow:0 8px 28px #193b2810}
@@ -121,6 +126,9 @@ document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click
 document.getElementById('exportBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='pocket-money-backup-'+today()+'.json';a.click();URL.revokeObjectURL(url);notice('Backup exported. Keep the file somewhere safe.')});
 document.getElementById('resetBtn').addEventListener('click',()=>{if(confirm('Reset all Pocket Money data saved in this browser? Export a backup first if you need it.')){data=fresh();selected=monthNow();save();render();notice('Demo data cleared.')}})
 if(!data.budgets[selected])data.budgets[selected]=defaults();save();render();
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+}
 })();
 </script>
 </body>
