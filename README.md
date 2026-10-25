@@ -12,7 +12,9 @@ Open [`frontend/pocket-money.html`](frontend/pocket-money.html) in a browser to 
 - Create a monthly allocation for savings, investments, pocket money, food, enjoyment, travel, phone/recharge, bike/transport, emergency fund, and other expenses.
 - Record dated expenses and review monthly spending.
 - Create savings goals for a phone, bike, emergency fund, or other target.
-- Export a JSON backup of your data.
+- Export and import a JSON backup of your data.
+- Review all recorded months in the monthly reports dashboard and export salaries, budgets, expenses, and savings goals to CSV.
+- Data is saved in browser local storage on the current device; it is not yet synced across devices or user accounts.
 
 **Storage note:** this first version stores data in the browser's local storage on the current device. It does not yet sync between devices, use bank integration, or store finance records in the backend. Export backups regularly.
 
