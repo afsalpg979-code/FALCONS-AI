@@ -40,9 +40,9 @@
 <div class="report-grid">
 <div class="report-metric"><span>Total salary recorded</span><strong id="reportIncome">₹0</strong></div>
 <div class="report-metric"><span>Total expenses recorded</span><strong id="reportExpenses">₹0</strong></div>
-<div class="report-metric"><span>Net balance (salary − expenses)</span><strong id="reportBalance">₹0</strong></div>
+<div class="report-metric"><span>Net available (salary − expenses − target contributions)</span><strong id="reportBalance">₹0</strong></div>
 </div>
-<div class="report-table-wrap"><table class="report-table"><thead><tr><th>Month</th><th>Salary</th><th>Expenses</th><th>Balance</th></tr></thead><tbody id="reportRows"></tbody></table></div>
+<div class="report-table-wrap"><table class="report-table"><thead><tr><th>Month</th><th>Salary</th><th>Expenses</th><th>Target contributions</th><th>Net available</th></tr></thead><tbody id="reportRows"></tbody></table></div>
 </section>
 <div class="tabrow"><button class="tab active" data-tab="overview">Overview</button><button class="tab" data-tab="budget">Budget categories</button><button class="tab" data-tab="activity">Expenses & goals</button></div>
 <div class="layout">
@@ -146,19 +146,19 @@ function renderGoals(){
 }
 function renderTransactions(){const list=expenses().slice().sort((a,b)=>b.date.localeCompare(a.date));document.getElementById('txCount').textContent=list.length+' records';document.getElementById('transactionList').innerHTML=list.length?list.slice(0,30).map(e=>{const c=cats.find(c=>c.id===e.category);return '<div class="tx"><div class="tx-main"><div class="tx-title">'+(c?c.icon+' ':'')+escapeHtml(e.note|| (c?c.name:'Expense'))+'</div><div class="tx-meta">'+e.date+' · '+(c?c.name:'Other')+'</div></div><div style="text-align:right"><strong style="font-size:13px">'+fmt(e.amount)+'</strong><br><button data-delete-expense="'+e.id+'">Delete</button></div></div>'}).join(''):'<div class="empty">No expenses for this month yet. Add your first expense.</div>'}
 function renderReports(){
- const months=new Set([...Object.keys(data.salaries),...Object.keys(data.budgets),...data.expenses.map(e=>e.date&&e.date.slice(0,7)).filter(Boolean)]);
+ const months=new Set([...Object.keys(data.salaries),...Object.keys(data.budgets),...data.expenses.map(e=>e.date&&e.date.slice(0,7)).filter(Boolean),...data.goals.flatMap(g=>(g.contributions||[]).map(c=>c.date&&c.date.slice(0,7))).filter(Boolean)]);
  if(!months.size)months.add(selected);
  const rows=Array.from(months).sort().reverse().map(m=>{
    const income=Number(data.salaries[m]||0);
    const spent=data.expenses.filter(e=>e.date&&e.date.slice(0,7)===m).reduce((sum,e)=>sum+(Number(e.amount)||0),0);
-   return {month:m,income,spent,balance:income-spent};
+   const contributions=data.goals.reduce((sum,g)=>sum+(g.contributions||[]).filter(c=>c.date&&c.date.slice(0,7)===m).reduce((a,c)=>a+(Number(c.amount)||0),0),0);\n   return {month:m,income,spent,contributions,balance:income-spent-contributions};
  });
  const totalIncome=rows.reduce((s,r)=>s+r.income,0),totalSpent=rows.reduce((s,r)=>s+r.spent,0);
  document.getElementById('reportIncome').textContent=fmt(totalIncome);
  document.getElementById('reportExpenses').textContent=fmt(totalSpent);
  document.getElementById('reportBalance').textContent=fmt(totalIncome-totalSpent);
  document.getElementById('reportBalance').style.color=totalIncome-totalSpent<0?'var(--red)':'var(--green)';
- document.getElementById('reportRows').innerHTML=rows.map(r=>'<tr><td>'+monthName(r.month)+'</td><td>'+fmt(r.income)+'</td><td>'+fmt(r.spent)+'</td><td style="color:'+(r.balance<0?'var(--red)':'var(--green)')+';font-weight:750">'+fmt(r.balance)+'</td></tr>').join('');
+ document.getElementById('reportRows').innerHTML=rows.map(r=>'<tr><td>'+monthName(r.month)+'</td><td>'+fmt(r.income)+'</td><td>'+fmt(r.spent)+'</td><td>'+fmt(r.contributions)+'</td><td style="color:'+(r.balance<0?'var(--red)':'var(--green)')+';font-weight:750">'+fmt(r.balance)+'</td></tr>').join('');
 }
 function render(){fillMonths();const s=salary(),b=sumBudget(),sp=sumSpent();document.getElementById('salaryAmount').value=data.salaries[selected]??'';document.getElementById('statSalary').textContent=fmt(s);document.getElementById('salaryLabel').textContent=monthName(selected);document.getElementById('statSavings').textContent=fmt(sumSavings());document.getElementById('statSpent').textContent=fmt(sp);document.getElementById('spentLabel').textContent=expenses().length+' transactions this month';document.getElementById('statLeft').textContent=fmt(s-b);document.getElementById('statLeft').style.color=s-b<0?'var(--red)':'var(--green)';renderCategories();renderGoals();renderTransactions();renderReports()}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
