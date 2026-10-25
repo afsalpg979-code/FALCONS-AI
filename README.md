@@ -1,4 +1,20 @@
-# FALCONS AI
+# Pocket Money & FALCONS AI
+
+Pocket Money is a mobile-friendly salary, budget, expense, and savings-goal workspace added to this repository. The existing FALCONS AI assistant is preserved while the finance module is developed.
+
+## Pocket Money workspace
+
+Open [`frontend/pocket-money.html`](frontend/pocket-money.html) in a browser to use the salary and savings tracker.
+
+- Record a different salary for every month (for example ₹30,000, ₹25,000, or ₹27,000).
+- Create a monthly allocation for savings, investments, pocket money, food, enjoyment, travel, phone/recharge, bike/transport, emergency fund, and other expenses.
+- Record dated expenses and review monthly spending.
+- Create savings goals for a phone, bike, emergency fund, or other target.
+- Export a JSON backup of your data.
+
+**Storage note:** this first version stores data in the browser's local storage on the current device. It does not yet sync between devices, use bank integration, or store finance records in the backend. Export backups regularly.
+
+## Existing FALCONS AI assistant
 
 Futuristic JARVIS-inspired AI assistant.
 
