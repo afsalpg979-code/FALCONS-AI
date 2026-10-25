@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#102b22">
+<title>Pocket Money — Salary & Savings</title>
+<style>
+:root{--bg:#f4f7f3;--panel:#fff;--ink:#172b22;--muted:#75837a;--line:#e3eae4;--green:#176b4b;--mint:#e5f5ec;--orange:#e69b4a;--red:#cf5d57;--shadow:0 8px 28px #193b2810}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}button,input,select{font:inherit}button{cursor:pointer}.app{max-width:1180px;margin:auto;padding:24px}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:22px}.brand{display:flex;align-items:center;gap:12px}.logo{width:48px;height:48px;border-radius:16px;background:var(--green);color:white;display:grid;place-items:center;font-size:25px;box-shadow:0 8px 18px #176b4b30}.brand h1{font-size:23px;margin:0;letter-spacing:-.7px}.brand p{margin:3px 0 0;color:var(--muted);font-size:13px}.top-actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid var(--line);background:white;color:var(--ink);padding:10px 14px;border-radius:12px;font-weight:650}.btn.primary{background:var(--green);border-color:var(--green);color:white}.btn.danger{color:var(--red)}.hero{background:linear-gradient(125deg,#123c2d,#1c7250);color:#fff;border-radius:24px;padding:26px;display:grid;grid-template-columns:1.2fr .8fr;gap:22px;box-shadow:var(--shadow)}.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:1.7px;color:#b6e6cb;font-weight:700}.hero h2{font-size:clamp(28px,4vw,42px);letter-spacing:-1.4px;line-height:1.08;margin:12px 0}.hero p{color:#d3e9dc;max-width:470px;font-size:14px;line-height:1.6}.salary-form{align-self:center;background:#ffffff12;border:1px solid #ffffff30;border-radius:18px;padding:17px}.salary-form label{display:block;color:#d3e9dc;font-size:12px;margin-bottom:7px}.salary-row{display:flex;gap:8px}.salary-row input{min-width:0;flex:1}.salary-form input,.salary-form select{width:100%;border:1px solid #ffffff40;background:#ffffff12;color:white;border-radius:11px;padding:12px;outline:none}.salary-form option{color:#172b22}.salary-form button{margin-top:10px;width:100%;border:0;background:#e5f5ec;color:#174b35;border-radius:11px;padding:12px;font-weight:750}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin:16px 0}.stat,.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow)}.stat .label{color:var(--muted);font-size:12px}.stat .value{font-size:clamp(20px,2.6vw,28px);font-weight:800;letter-spacing:-.8px;margin:9px 0 5px;overflow-wrap:anywhere}.stat small{color:var(--muted);font-size:11px}.layout{display:grid;grid-template-columns:1.05fr .95fr;gap:16px}.panel{margin-bottom:16px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px}.panel h3{margin:0;font-size:16px;letter-spacing:-.3px}.panel-head span{font-size:12px;color:var(--muted)}.category-list{display:grid;gap:13px}.category{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center}.cat-icon{width:36px;height:36px;border-radius:12px;background:var(--mint);display:grid;place-items:center;font-size:17px}.cat-name{font-weight:700;font-size:13px}.cat-sub{font-size:11px;color:var(--muted);margin-top:3px}.cat-amount{text-align:right;font-size:12px;font-weight:750}.bar{height:6px;background:#edf1ed;border-radius:20px;overflow:hidden;margin-top:7px}.bar i{height:100%;display:block;background:var(--green);border-radius:20px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;color:var(--muted)}.field input,.field select{width:100%;min-width:0;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);outline-color:#80b99c}.form-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.goals,.transactions{display:grid;gap:10px}.goal,.tx{border:1px solid var(--line);border-radius:13px;padding:12px;display:flex;justify-content:space-between;gap:12px;align-items:center}.goal-main,.tx-main{min-width:0}.goal-title,.tx-title{font-weight:700;font-size:13px}.goal-meta,.tx-meta{font-size:11px;color:var(--muted);margin-top:4px}.goal-right{text-align:right;white-space:nowrap}.goal-right strong{font-size:12px}.goal-right button,.tx button{border:0;background:transparent;color:var(--red);font-size:12px;margin-top:4px}.empty{padding:18px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px;font-size:13px}.bottom-note{color:var(--muted);font-size:11px;line-height:1.6;text-align:center;padding:10px 0 24px}.notice{display:none;padding:11px 14px;background:var(--mint);border-radius:12px;color:var(--green);font-size:13px;margin-bottom:14px}.notice.show{display:block}.tabrow{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:15px}.tab{border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:999px;padding:8px 12px;font-size:12px}.tab.active{background:var(--mint);border-color:#b5dfc6;color:var(--green);font-weight:750}.section-hidden{display:none!important}
+@media(max-width:760px){.app{padding:15px}.top{align-items:flex-start}.brand h1{font-size:20px}.top-actions .btn{padding:9px 10px;font-size:12px}.hero{grid-template-columns:1fr;padding:20px;border-radius:20px}.hero h2{font-size:32px}.stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.stat{padding:14px}.layout{grid-template-columns:1fr}.panel{padding:15px}.salary-row{flex-direction:column}.salary-row input,.salary-row select{width:100%}}@media(max-width:390px){.top{flex-direction:column}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+<div class="brand"><div class="logo">₹</div><div><h1>Pocket Money</h1><p>Build good money habits, one month at a time.</p></div></div>
+<div class="top-actions"><button class="btn" id="exportBtn">Export data</button><button class="btn" id="resetBtn">Reset demo</button></div>
+</header>
+<div id="notice" class="notice" role="status"></div>
+<section class="hero">
+<div><div class="eyebrow">Your monthly money plan</div><h2>Make your salary<br>work for you.</h2><p>Every month can be different. Enter your actual salary, plan your categories, track expenses, and watch your savings goals grow.</p></div>
+<form id="salaryForm" class="salary-form"><label for="salaryMonth">Choose salary month</label><div class="salary-row"><select id="salaryMonth" aria-label="Salary month"></select><input id="salaryAmount" type="number" min="0" step="0.01" placeholder="Monthly salary ₹" required></div><button type="submit">Save this month's salary</button></form>
+</section>
+<section class="stats">
+<div class="stat"><div class="label">Salary this month</div><div class="value" id="statSalary">₹0</div><small id="salaryLabel">Selected month</small></div>
+<div class="stat"><div class="label">Planned savings</div><div class="value" id="statSavings">₹0</div><small>Saving goals + emergency fund</small></div>
+<div class="stat"><div class="label">Expenses recorded</div><div class="value" id="statSpent">₹0</div><small id="spentLabel">This month</small></div>
+<div class="stat"><div class="label">Money unallocated</div><div class="value" id="statLeft">₹0</div><small>Salary minus budget plan</small></div>
+</section>
+<div class="tabrow"><button class="tab active" data-tab="overview">Overview</button><button class="tab" data-tab="budget">Budget categories</button><button class="tab" data-tab="activity">Expenses & goals</button></div>
+<div class="layout">
+<div>
+<section class="panel" id="budgetPanel">
+<div class="panel-head"><h3>Monthly budget</h3><span id="budgetMonthLabel"></span></div>
+<div class="category-list" id="categoryList"></div>
+<div style="display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding-top:14px;margin-top:15px;font-size:13px;font-weight:800"><span>Total planned</span><span id="budgetTotal">₹0</span></div>
+<p style="font-size:11px;line-height:1.6;color:var(--muted);margin:10px 0 0">Change category amounts to fit this month's salary. Budget categories are plans, not actual expenses.</p>
+</section>
+<section class="panel">
+<div class="panel-head"><h3>Add an expense</h3><span>Track what you spend</span></div>
+<form id="expenseForm">
+<div class="form-grid">
+<div class="field"><label for="expenseAmount">Amount (₹)</label><input id="expenseAmount" type="number" min="0.01" step="0.01" required placeholder="e.g. 250"></div>
+<div class="field"><label for="expenseDate">Date</label><input id="expenseDate" type="date" required></div>
+<div class="field"><label for="expenseCategory">Category</label><select id="expenseCategory"></select></div>
+<div class="field"><label for="expenseNote">Note (optional)</label><input id="expenseNote" maxlength="100" placeholder="e.g. lunch"></div>
+</div><div class="form-actions"><button class="btn primary" type="submit">+ Add expense</button></div>
+</form>
+</section>
+</div>
+<div>
+<section class="panel" id="goalPanel">
+<div class="panel-head"><h3>Savings goals</h3><span>Save for what matters</span></div>
+<form id="goalForm">
+<div class="form-grid">
+<div class="field full"><label for="goalName">Goal name</label><input id="goalName" maxlength="60" required placeholder="e.g. New phone, bike, emergency fund"></div>
+<div class="field"><label for="goalTarget">Target amount (₹)</label><input id="goalTarget" type="number" min="1" step="0.01" required placeholder="30000"></div>
+<div class="field"><label for="goalSaved">Already saved (₹)</label><input id="goalSaved" type="number" min="0" step="0.01" value="0" required></div>
+</div><div class="form-actions"><button class="btn primary" type="submit">+ Create saving goal</button></div>
+</form>
+<div id="goalList" class="goals" style="margin-top:14px"></div>
+</section>
+<section class="panel" id="activityPanel">
+<div class="panel-head"><h3>Recent expenses</h3><span id="txCount">0 records</span></div><div id="transactionList" class="transactions"></div>
+</section>
+<section class="panel">
+<div class="panel-head"><h3>Monthly allocation</h3><span>Adjust anytime</span></div>
+<form id="allocationForm"><div id="allocationFields" class="form-grid"></div><div class="form-actions"><button class="btn primary" type="submit">Save budget plan</button></div></form>
+</section>
+</div>
+</div>
+<div class="bottom-note">Your entries are saved in this browser on this device using local storage. Export a backup regularly. This version does not sync between devices or provide bank integration. Investment values can rise or fall; this app only tracks the amount you allocate.</div>
+</div>
+<script>
+(function(){
+const KEY='pocketMoneyDataV1';
+const cats=[
+{id:'savings',name:'Savings',icon:'🐷',kind:'saving',default:5000},
+{id:'investment',name:'Investment',icon:'📈',kind:'saving',default:2000},
+{id:'pocket',name:'Pocket money',icon:'👛',kind:'expense',default:2000},
+{id:'food',name:'Food',icon:'🍲',kind:'expense',default:4000},
+{id:'enjoyment',name:'Enjoyment',icon:'🎉',kind:'expense',default:2000},
+{id:'travel',name:'Travel',icon:'🚌',kind:'expense',default:2000},
+{id:'phone',name:'Phone & recharge',icon:'📱',kind:'expense',default:1000},
+{id:'bike',name:'Bike & transport',icon:'🏍️',kind:'expense',default:3000},
+{id:'emergency',name:'Emergency fund',icon:'🛟',kind:'saving',default:2000},
+{id:'other',name:'Other expenses',icon:'🧾',kind:'expense',default:0}
+];
+const fmt=n=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(Number(n)||0);
+const monthNow=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const monthName=m=>{const [y,mo]=m.split('-').map(Number);return new Date(y,mo-1,1).toLocaleDateString('en-IN',{month:'long',year:'numeric'})};
+const fresh=()=>({salaries:{},budgets:{},expenses:[],goals:[]});
+let data;
+try{data=JSON.parse(localStorage.getItem(KEY)||'null')||fresh()}catch(e){data=fresh()}
+let selected=monthNow();
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function defaults(){return Object.fromEntries(cats.map(c=>[c.id,c.default]))}
+function budget(){if(!data.budgets[selected])data.budgets[selected]=defaults();return data.budgets[selected]}
+function salary(){return Number(data.salaries[selected]||0)}
+function expenses(){return data.expenses.filter(e=>e.date&&e.date.slice(0,7)===selected)}
+function sumBudget(){return Object.values(budget()).reduce((a,b)=>a+(Number(b)||0),0)}
+function sumSavings(){return cats.filter(c=>c.kind==='saving').reduce((a,c)=>a+(Number(budget()[c.id])||0),0)}
+function sumSpent(){return expenses().reduce((a,e)=>a+Number(e.amount||0),0)}
+function notice(msg){const n=document.getElementById('notice');n.textContent=msg;n.classList.add('show');setTimeout(()=>n.classList.remove('show'),2800)}
+function fillMonths(){const sel=document.getElementById('salaryMonth');const all=new Set([monthNow(),selected,...Object.keys(data.salaries),...Object.keys(data.budgets)]);const current=new Date();for(let i=-12;i<=12;i++){const d=new Date(current.getFullYear(),current.getMonth()+i,1);all.add(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'))}sel.innerHTML=Array.from(all).sort().map(m=>'<option value="'+m+'">'+monthName(m)+'</option>').join('');sel.value=selected}
+function renderCategories(){const b=budget(),spentBy={};expenses().forEach(e=>spentBy[e.category]=(spentBy[e.category]||0)+Number(e.amount));document.getElementById('categoryList').innerHTML=cats.map(c=>{const amount=Number(b[c.id])||0,spent=spentBy[c.id]||0,pct=amount?Math.min(100,spent/amount*100):0;return '<div class="category"><div class="cat-icon">'+c.icon+'</div><div><div class="cat-name">'+c.name+'</div><div class="cat-sub">'+(c.kind==='saving'?'Planned saving':'Spent '+fmt(spent)+' of '+fmt(amount))+'</div><div class="bar"><i style="width:'+(c.kind==='saving'?(salary()?Math.min(100,amount/salary()*100):0):pct)+'%;background:'+(c.kind==='saving'?'#4b9a70':pct>100?'#cf5d57':'#176b4b')+'"></i></div></div><div class="cat-amount">'+fmt(amount)+'</div></div>'}).join('');document.getElementById('budgetTotal').textContent=fmt(sumBudget());document.getElementById('budgetMonthLabel').textContent=monthName(selected);document.getElementById('allocationFields').innerHTML=cats.map(c=>'<div class="field"><label for="alloc-'+c.id+'">'+c.icon+' '+c.name+'</label><input id="alloc-'+c.id+'" data-cat="'+c.id+'" type="number" min="0" step="0.01" value="'+(Number(b[c.id])||0)+'"></div>').join('');document.getElementById('expenseCategory').innerHTML=cats.filter(c=>c.kind==='expense').concat(cats.filter(c=>c.kind==='saving')).map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('')}
+function renderGoals(){const el=document.getElementById('goalList');if(!data.goals.length){el.innerHTML='<div class="empty">No saving goals yet. Create one above — for a phone, bike, emergency fund or investment goal.</div>';return}el.innerHTML=data.goals.map(g=>{const pct=Math.min(100,Number(g.target)?Number(g.saved)/Number(g.target)*100:0);return '<div class="goal"><div class="goal-main"><div class="goal-title">🎯 '+escapeHtml(g.name)+'</div><div class="goal-meta">'+fmt(g.saved)+' saved of '+fmt(g.target)+'</div><div class="bar"><i style="width:'+pct+'%"></i></div></div><div class="goal-right"><strong>'+Math.round(pct)+'%</strong><br><button data-delete-goal="'+g.id+'">Delete</button></div></div>'}).join('')}
+function renderTransactions(){const list=expenses().slice().sort((a,b)=>b.date.localeCompare(a.date));document.getElementById('txCount').textContent=list.length+' records';document.getElementById('transactionList').innerHTML=list.length?list.slice(0,30).map(e=>{const c=cats.find(c=>c.id===e.category);return '<div class="tx"><div class="tx-main"><div class="tx-title">'+(c?c.icon+' ':'')+escapeHtml(e.note|| (c?c.name:'Expense'))+'</div><div class="tx-meta">'+e.date+' · '+(c?c.name:'Other')+'</div></div><div style="text-align:right"><strong style="font-size:13px">'+fmt(e.amount)+'</strong><br><button data-delete-expense="'+e.id+'">Delete</button></div></div>'}).join(''):'<div class="empty">No expenses for this month yet. Add your first expense.</div>'}
+function render(){fillMonths();const s=salary(),b=sumBudget(),sp=sumSpent();document.getElementById('salaryAmount').value=data.salaries[selected]??'';document.getElementById('statSalary').textContent=fmt(s);document.getElementById('salaryLabel').textContent=monthName(selected);document.getElementById('statSavings').textContent=fmt(sumSavings());document.getElementById('statSpent').textContent=fmt(sp);document.getElementById('spentLabel').textContent=expenses().length+' transactions this month';document.getElementById('statLeft').textContent=fmt(s-b);document.getElementById('statLeft').style.color=s-b<0?'var(--red)':'var(--green)';renderCategories();renderGoals();renderTransactions()}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+document.getElementById('salaryMonth').addEventListener('change',e=>{selected=e.target.value;render()});
+document.getElementById('salaryForm').addEventListener('submit',e=>{e.preventDefault();const n=Number(document.getElementById('salaryAmount').value);if(!Number.isFinite(n)||n<0)return notice('Enter a valid salary amount.');data.salaries[selected]=n;if(!data.budgets[selected])data.budgets[selected]=defaults();save();render();notice('Salary saved for '+monthName(selected)+'.')});
+document.getElementById('allocationForm').addEventListener('submit',e=>{e.preventDefault();const b={};cats.forEach(c=>{b[c.id]=Math.max(0,Number(document.getElementById('alloc-'+c.id).value)||0)});data.budgets[selected]=b;save();render();notice('Budget plan saved for '+monthName(selected)+'.')});
+document.getElementById('expenseDate').value=today();
+document.getElementById('expenseForm').addEventListener('submit',e=>{e.preventDefault();const amount=Number(document.getElementById('expenseAmount').value),date=document.getElementById('expenseDate').value;if(!(amount>0)||!date)return notice('Enter a valid amount and date.');data.expenses.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),amount,date,category:document.getElementById('expenseCategory').value,note:document.getElementById('expenseNote').value.trim()});selected=date.slice(0,7);save();e.target.reset();document.getElementById('expenseDate').value=today();render();notice('Expense added.')});
+document.getElementById('goalForm').addEventListener('submit',e=>{e.preventDefault();const name=document.getElementById('goalName').value.trim(),target=Number(document.getElementById('goalTarget').value),saved=Number(document.getElementById('goalSaved').value);if(!name||target<=0||saved<0)return notice('Check your saving goal details.');data.goals.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),name,target,saved});save();e.target.reset();document.getElementById('goalSaved').value='0';render();notice('Saving goal created.')});
+document.addEventListener('click',e=>{const g=e.target.closest('[data-delete-goal]'),x=e.target.closest('[data-delete-expense]');if(g){data.goals=data.goals.filter(a=>a.id!==g.dataset.deleteGoal);save();render();notice('Goal deleted.')}if(x){data.expenses=data.expenses.filter(a=>a.id!==x.dataset.deleteExpense);save();render();notice('Expense deleted.')}});
+document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b===btn));const t=btn.dataset.tab;document.getElementById('budgetPanel').classList.toggle('section-hidden',t==='activity');document.getElementById('goalPanel').classList.toggle('section-hidden',t==='budget');document.getElementById('activityPanel').classList.toggle('section-hidden',t==='budget');if(t==='budget'){document.getElementById('budgetPanel').scrollIntoView({behavior:'smooth',block:'start'})}if(t==='activity'){document.getElementById('goalPanel').scrollIntoView({behavior:'smooth',block:'start'})}}));
+document.getElementById('exportBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='pocket-money-backup-'+today()+'.json';a.click();URL.revokeObjectURL(url);notice('Backup exported. Keep the file somewhere safe.')});
+document.getElementById('resetBtn').addEventListener('click',()=>{if(confirm('Reset all Pocket Money data saved in this browser? Export a backup first if you need it.')){data=fresh();selected=monthNow();save();render();notice('Demo data cleared.')}})
+if(!data.budgets[selected])data.budgets[selected]=defaults();save();render();
+})();
+</script>
+</body>
+</html>
