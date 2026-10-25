@@ -218,7 +218,7 @@ function reminderItems(){
    else if(days<=7)items.push({id:g.id,type:'soon',title:g.name+' — deadline in '+days+' day'+(days===1?'':'s'),detail:'Final target date: '+dueIso+'. Remaining target: '+fmt(remaining)+'.',days,amount:remaining});
   }
  });
- return items.sort((a,b)=>({overdue:0,today:1,soon:2}[a.type]-({overdue:0,today:1,soon:2}[b.type])||a.days-b.days);
+ const rank={overdue:0,today:1,soon:2};return items.sort((a,b)=>rank[a.type]-rank[b.type]||a.days-b.days);
 }
 function ordinal(n){return n===1?'st':n===2?'nd':n===3?'rd':'th'}
 function checkPaymentReminders(){
