@@ -1,0 +1,66 @@
+name: Build Pocket Money Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "frontend/pocket-money.html"
+      - ".github/workflows/build-pocket-money-android.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: ""
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Prepare Capacitor project
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f frontend/pocket-money.html
+          mkdir -p native-pocket-money/www
+          cp frontend/pocket-money.html native-pocket-money/www/index.html
+          cd native-pocket-money
+          npm init -y
+          npm install @capacitor/core@^7 @capacitor/cli@^7 @capacitor/android@^7
+          cat > capacitor.config.json <<'EOF'
+          {
+            "appId": "com.falcons.pocketmoney",
+            "appName": "Pocket Money",
+            "webDir": "www",
+            "bundledWebRuntime": false
+          }
+          EOF
+          npx cap add android
+          npx cap sync android
+
+      - name: Build debug APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd native-pocket-money/android
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: pocket-money-debug-apk
+          path: native-pocket-money/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
