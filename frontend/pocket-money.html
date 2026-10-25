@@ -36,7 +36,7 @@
 <div class="stat"><div class="label">Money unallocated</div><div class="value" id="statLeft">₹0</div><small>Salary minus budget plan</small></div>
 </section>
 <section class="panel" id="reportsPanel">
-<div class="panel-head"><div><h3>Monthly reports</h3><span>Income, spending and balance across your saved months</span></div><button class="btn" id="exportCsvBtn" type="button">Export CSV</button></div>
+<div class="panel-head"><div><h3>Monthly reports</h3><span>Income, expenses, target contributions and balance</span></div><button class="btn" id="exportCsvBtn" type="button">Export CSV</button></div>
 <div class="report-grid">
 <div class="report-metric"><span>Total salary recorded</span><strong id="reportIncome">₹0</strong></div>
 <div class="report-metric"><span>Total expenses recorded</span><strong id="reportExpenses">₹0</strong></div>
@@ -67,13 +67,16 @@
 </div>
 <div>
 <section class="panel" id="goalPanel">
-<div class="panel-head"><h3>Savings goals</h3><span>Save for what matters</span></div>
+<div class="panel-head"><h3>Targets & savings goals</h3><span>Deadlines, contributions and progress</span></div>
 <form id="goalForm">
 <div class="form-grid">
 <div class="field full"><label for="goalName">Goal name</label><input id="goalName" maxlength="60" required placeholder="e.g. New phone, bike, emergency fund"></div>
 <div class="field"><label for="goalTarget">Target amount (₹)</label><input id="goalTarget" type="number" min="1" step="0.01" required placeholder="30000"></div>
-<div class="field"><label for="goalSaved">Already saved (₹)</label><input id="goalSaved" type="number" min="0" step="0.01" value="0" required></div>
-</div><div class="form-actions"><button class="btn primary" type="submit">+ Create saving goal</button></div>
+<div class="field"><label for="goalSaved">Already paid / saved (₹)</label><input id="goalSaved" type="number" min="0" step="0.01" value="0" required></div>
+<div class="field"><label for="goalStart">Start month</label><input id="goalStart" type="month" required></div>
+<div class="field"><label for="goalDeadline">Deadline</label><input id="goalDeadline" type="month" required></div>
+<div class="field full"><label for="goalType">Target type</label><select id="goalType"><option value="saving">Savings goal</option><option value="payment">Payment obligation (course fee, bill, etc.)</option></select></div>
+</div><div class="form-actions"><button class="btn primary" type="submit">+ Create target</button></div>
 </form>
 <div id="goalList" class="goals" style="margin-top:14px"></div>
 </section>
@@ -122,7 +125,25 @@ function sumSpent(){return expenses().reduce((a,e)=>a+Number(e.amount||0),0)}
 function notice(msg){const n=document.getElementById('notice');n.textContent=msg;n.classList.add('show');setTimeout(()=>n.classList.remove('show'),2800)}
 function fillMonths(){const sel=document.getElementById('salaryMonth');const all=new Set([monthNow(),selected,...Object.keys(data.salaries),...Object.keys(data.budgets)]);const current=new Date();for(let i=-12;i<=12;i++){const d=new Date(current.getFullYear(),current.getMonth()+i,1);all.add(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'))}sel.innerHTML=Array.from(all).sort().map(m=>'<option value="'+m+'">'+monthName(m)+'</option>').join('');sel.value=selected}
 function renderCategories(){const b=budget(),spentBy={};expenses().forEach(e=>spentBy[e.category]=(spentBy[e.category]||0)+Number(e.amount));document.getElementById('categoryList').innerHTML=cats.map(c=>{const amount=Number(b[c.id])||0,spent=spentBy[c.id]||0,pct=amount?Math.min(100,spent/amount*100):0;return '<div class="category"><div class="cat-icon">'+c.icon+'</div><div><div class="cat-name">'+c.name+'</div><div class="cat-sub">'+(c.kind==='saving'?'Planned saving':'Spent '+fmt(spent)+' of '+fmt(amount))+'</div><div class="bar"><i style="width:'+(c.kind==='saving'?(salary()?Math.min(100,amount/salary()*100):0):pct)+'%;background:'+(c.kind==='saving'?'#4b9a70':pct>100?'#cf5d57':'#176b4b')+'"></i></div></div><div class="cat-amount">'+fmt(amount)+'</div></div>'}).join('');document.getElementById('budgetTotal').textContent=fmt(sumBudget());document.getElementById('budgetMonthLabel').textContent=monthName(selected);document.getElementById('allocationFields').innerHTML=cats.map(c=>'<div class="field"><label for="alloc-'+c.id+'">'+c.icon+' '+c.name+'</label><input id="alloc-'+c.id+'" data-cat="'+c.id+'" type="number" min="0" step="0.01" value="'+(Number(b[c.id])||0)+'"></div>').join('');document.getElementById('expenseCategory').innerHTML=cats.filter(c=>c.kind==='expense').concat(cats.filter(c=>c.kind==='saving')).map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('')}
-function renderGoals(){const el=document.getElementById('goalList');if(!data.goals.length){el.innerHTML='<div class="empty">No saving goals yet. Create one above — for a phone, bike, emergency fund or investment goal.</div>';return}el.innerHTML=data.goals.map(g=>{const pct=Math.min(100,Number(g.target)?Number(g.saved)/Number(g.target)*100:0);return '<div class="goal"><div class="goal-main"><div class="goal-title">🎯 '+escapeHtml(g.name)+'</div><div class="goal-meta">'+fmt(g.saved)+' saved of '+fmt(g.target)+'</div><div class="bar"><i style="width:'+pct+'%"></i></div></div><div class="goal-right"><strong>'+Math.round(pct)+'%</strong><br><button data-delete-goal="'+g.id+'">Delete</button></div></div>'}).join('')}
+function monthDistance(from,to){const [fy,fm]=from.split('-').map(Number),[ty,tm]=to.split('-').map(Number);return (ty-fy)*12+(tm-fm)}
+function renderGoals(){
+ const el=document.getElementById('goalList');
+ if(!data.goals.length){el.innerHTML='<div class="empty">No targets yet. Create a course-fee, savings, emergency-fund or future-purchase target above.</div>';return}
+ const current=monthNow();
+ el.innerHTML=data.goals.map(g=>{
+  g.type=g.type||'saving';g.startMonth=g.startMonth||current;g.deadline=g.deadline||'';
+  g.initialSaved=Number.isFinite(Number(g.initialSaved))?Number(g.initialSaved):Number(g.saved||0);
+  g.contributions=Array.isArray(g.contributions)?g.contributions:[];
+  g.saved=Number(g.initialSaved)+g.contributions.reduce((sum,c)=>sum+Number(c.amount||0),0);
+  const target=Math.max(0,Number(g.target)||0),remaining=Math.max(0,target-g.saved),pct=target?Math.min(100,g.saved/target*100):0;
+  const deadlinePassed=!!g.deadline&&g.deadline<current&&remaining>0;
+  const monthsLeft=g.deadline?Math.max(1,monthDistance(current,g.deadline)+1):0;
+  const monthly=remaining===0?0:monthsLeft?Math.ceil(remaining/monthsLeft):0;
+  const status=remaining===0?'Completed':deadlinePassed?'Overdue':g.deadline?'Targeted for '+monthName(g.deadline):'No deadline set';
+  const history=g.contributions.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);
+  return '<div class="goal" style="align-items:flex-start"><div class="goal-main"><div class="goal-title">🎯 '+escapeHtml(g.name)+' <span style="font-size:10px;color:var(--muted);font-weight:600">· '+(g.type==='payment'?'PAYMENT':'SAVINGS')+'</span></div><div class="goal-meta">'+fmt(g.saved)+' of '+fmt(target)+' · '+Math.round(pct)+'% complete</div><div class="bar"><i style="width:'+pct+'%;background:'+(remaining===0?'#176b4b':deadlinePassed?'#cf5d57':'#4b9a70')+'"></i></div><div class="goal-meta">Remaining: <strong>'+fmt(remaining)+'</strong> · '+escapeHtml(status)+(monthly?' · Plan '+fmt(monthly)+'/month':'')+'</div><div class="goal-meta">Started '+escapeHtml(g.startMonth)+(g.deadline?' · Deadline '+escapeHtml(g.deadline):'')+'</div>'+(history.length?'<details style="margin-top:8px"><summary style="font-size:11px;cursor:pointer;color:var(--green)">Recent contributions ('+g.contributions.length+')</summary>'+history.map(c=>'<div class="goal-meta">'+escapeHtml(c.date||'No date')+' · '+fmt(c.amount)+' '+(c.note?'· '+escapeHtml(c.note):'')+'</div>').join('')+'</details>':'<div class="goal-meta">No contributions recorded yet; the starting amount is tracked separately.</div>')+'</div><div class="goal-right"><strong>'+Math.round(pct)+'%</strong><br><button data-add-contribution="'+g.id+'">+ Add</button><br><button data-edit-goal="'+g.id+'">Edit</button><br><button data-delete-goal="'+g.id+'">Delete</button></div></div>'
+ }).join('');
+}
 function renderTransactions(){const list=expenses().slice().sort((a,b)=>b.date.localeCompare(a.date));document.getElementById('txCount').textContent=list.length+' records';document.getElementById('transactionList').innerHTML=list.length?list.slice(0,30).map(e=>{const c=cats.find(c=>c.id===e.category);return '<div class="tx"><div class="tx-main"><div class="tx-title">'+(c?c.icon+' ':'')+escapeHtml(e.note|| (c?c.name:'Expense'))+'</div><div class="tx-meta">'+e.date+' · '+(c?c.name:'Other')+'</div></div><div style="text-align:right"><strong style="font-size:13px">'+fmt(e.amount)+'</strong><br><button data-delete-expense="'+e.id+'">Delete</button></div></div>'}).join(''):'<div class="empty">No expenses for this month yet. Add your first expense.</div>'}
 function renderReports(){
  const months=new Set([...Object.keys(data.salaries),...Object.keys(data.budgets),...data.expenses.map(e=>e.date&&e.date.slice(0,7)).filter(Boolean)]);
@@ -146,15 +167,47 @@ document.getElementById('salaryForm').addEventListener('submit',e=>{e.preventDef
 document.getElementById('allocationForm').addEventListener('submit',e=>{e.preventDefault();const b={};cats.forEach(c=>{b[c.id]=Math.max(0,Number(document.getElementById('alloc-'+c.id).value)||0)});data.budgets[selected]=b;save();render();notice('Budget plan saved for '+monthName(selected)+'.')});
 document.getElementById('expenseDate').value=today();
 document.getElementById('expenseForm').addEventListener('submit',e=>{e.preventDefault();const amount=Number(document.getElementById('expenseAmount').value),date=document.getElementById('expenseDate').value;if(!(amount>0)||!date)return notice('Enter a valid amount and date.');data.expenses.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),amount,date,category:document.getElementById('expenseCategory').value,note:document.getElementById('expenseNote').value.trim()});selected=date.slice(0,7);save();e.target.reset();document.getElementById('expenseDate').value=today();render();notice('Expense added.')});
-document.getElementById('goalForm').addEventListener('submit',e=>{e.preventDefault();const name=document.getElementById('goalName').value.trim(),target=Number(document.getElementById('goalTarget').value),saved=Number(document.getElementById('goalSaved').value);if(!name||target<=0||saved<0)return notice('Check your saving goal details.');data.goals.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),name,target,saved});save();e.target.reset();document.getElementById('goalSaved').value='0';render();notice('Saving goal created.')});
-document.addEventListener('click',e=>{const g=e.target.closest('[data-delete-goal]'),x=e.target.closest('[data-delete-expense]');if(g){data.goals=data.goals.filter(a=>a.id!==g.dataset.deleteGoal);save();render();notice('Goal deleted.')}if(x){data.expenses=data.expenses.filter(a=>a.id!==x.dataset.deleteExpense);save();render();notice('Expense deleted.')}});
+document.getElementById('goalStart').value=monthNow();
+document.getElementById('goalDeadline').value=(function(){const d=new Date();d.setMonth(d.getMonth()+6);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')})();
+document.getElementById('goalForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ const name=document.getElementById('goalName').value.trim(),target=Number(document.getElementById('goalTarget').value),saved=Number(document.getElementById('goalSaved').value),startMonth=document.getElementById('goalStart').value,deadline=document.getElementById('goalDeadline').value,type=document.getElementById('goalType').value;
+ if(!name||target<=0||saved<0||!startMonth||!deadline||deadline<startMonth)return notice('Check target details and make sure the deadline is not before the start month.');
+ data.goals.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),name,target,saved:saved,initialSaved:saved,startMonth,deadline,type,contributions:[],createdAt:today()});
+ save();e.target.reset();document.getElementById('goalSaved').value='0';document.getElementById('goalStart').value=monthNow();document.getElementById('goalDeadline').value=(function(){const d=new Date();d.setMonth(d.getMonth()+6);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')})();render();notice('Target created and saved on this device.')
+});
+document.addEventListener('click',e=>{
+ const del=e.target.closest('[data-delete-goal]'),edit=e.target.closest('[data-edit-goal]'),add=e.target.closest('[data-add-contribution]'),x=e.target.closest('[data-delete-expense]');
+ if(add){
+  const g=data.goals.find(a=>a.id===add.dataset.addContribution);if(!g)return;
+  const amountText=prompt('Contribution amount in ₹ (positive amount):');if(amountText===null)return;
+  const amount=Number(amountText);if(!Number.isFinite(amount)||amount<=0)return notice('Enter a valid contribution amount.');
+  const date=prompt('Contribution date (YYYY-MM-DD):',today());if(date===null)return;if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return notice('Use the date format YYYY-MM-DD.');
+  const note=prompt('Short note (optional):','')||'';
+  g.initialSaved=Number.isFinite(Number(g.initialSaved))?Number(g.initialSaved):Number(g.saved||0);g.contributions=Array.isArray(g.contributions)?g.contributions:[];
+  g.contributions.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),amount,date,note:note.slice(0,100)});g.saved=g.initialSaved+g.contributions.reduce((sum,c)=>sum+Number(c.amount||0),0);
+  save();render();notice('Contribution recorded in target history.');
+ }
+ if(edit){
+  const g=data.goals.find(a=>a.id===edit.dataset.editGoal);if(!g)return;
+  const name=prompt('Target name:',g.name);if(name===null)return;
+  const target=Number(prompt('Total target amount (₹):',String(g.target)));if(!Number.isFinite(target)||target<=0)return notice('Enter a valid target amount.');
+  const startMonth=prompt('Start month (YYYY-MM):',g.startMonth||monthNow());if(startMonth===null)return;
+  const deadline=prompt('Deadline (YYYY-MM):',g.deadline||'');if(deadline===null)return;
+  const type=prompt('Type: enter saving or payment',g.type||'saving');if(type===null)return;
+  if(!/^\d{4}-\d{2}$/.test(startMonth)||!/^\d{4}-\d{2}$/.test(deadline)||deadline<startMonth||!['saving','payment'].includes(type))return notice('Check dates and choose saving or payment.');
+  g.name=name.trim()||g.name;g.target=target;g.startMonth=startMonth;g.deadline=deadline;g.type=type;save();render();notice('Target details updated.');
+ }
+ if(del){if(confirm('Delete this target and its contribution history?')){data.goals=data.goals.filter(a=>a.id!==del.dataset.deleteGoal);save();render();notice('Target deleted.')}}
+ if(x){data.expenses=data.expenses.filter(a=>a.id!==x.dataset.deleteExpense);save();render();notice('Expense deleted.')}
+});
 document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b===btn));const t=btn.dataset.tab;document.getElementById('budgetPanel').classList.toggle('section-hidden',t==='activity');document.getElementById('goalPanel').classList.toggle('section-hidden',t==='budget');document.getElementById('activityPanel').classList.toggle('section-hidden',t==='budget');if(t==='budget'){document.getElementById('budgetPanel').scrollIntoView({behavior:'smooth',block:'start'})}if(t==='activity'){document.getElementById('goalPanel').scrollIntoView({behavior:'smooth',block:'start'})}}));
 document.getElementById('exportCsvBtn').addEventListener('click',()=>{
  const rows=[['Record type','Month/Date','Category','Description','Amount INR']];
  Object.entries(data.salaries).forEach(([m,a])=>rows.push(['Salary',m,'Salary','Monthly salary',Number(a)||0]));
  Object.entries(data.budgets).forEach(([m,b])=>cats.forEach(c=>rows.push(['Budget',m,c.name,'Planned allocation',Number(b[c.id])||0])));
  data.expenses.forEach(e=>{const c=cats.find(c=>c.id===e.category);rows.push(['Expense',e.date,c?c.name:e.category,e.note||'',Number(e.amount)||0])});
- data.goals.forEach(g=>rows.push(['Saving goal','',g.name,'Target '+g.target+'; saved '+g.saved,Number(g.saved)||0]));
+ data.goals.forEach(g=>{rows.push(['Target','',g.type==='payment'?'Payment':'Saving',g.name+'; target '+g.target+'; current '+g.saved+'; remaining '+Math.max(0,Number(g.target)-Number(g.saved))+'; start '+(g.startMonth||'')+'; deadline '+(g.deadline||''),Number(g.saved)||0]);(g.contributions||[]).forEach(c=>rows.push(['Target contribution',c.date,g.name,c.note||'',Number(c.amount)||0]));});
  const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\r\\n');
  const url=URL.createObjectURL(new Blob(['\\ufeff'+csv],{type:'text/csv;charset=utf-8;'})),a=document.createElement('a');a.href=url;a.download='pocket-money-report-'+today()+'.csv';a.click();URL.revokeObjectURL(url);notice('CSV report exported.');
 });
