@@ -31,6 +31,12 @@ The URL will only work after GitHub Pages is enabled and the workflow completes 
 
 The app requires HTTPS for service-worker/PWA features. GitHub Pages provides HTTPS.
 
+## Target management
+
+Pocket Money supports multiple targets, including savings goals and payment obligations such as course fees. Each target can have a total amount, starting month, deadline, initial saved/paid amount, and dated contribution records. The target card shows progress, remaining amount, deadline status, and an estimated monthly contribution. Target contribution history is included in the monthly report table and CSV/JSON exports.
+
+Example for a ₹60,000 course fee with ₹20,000 already paid: remaining amount is ₹40,000. If planned from November 2026 through March 2027 (five months), the simple estimate is ₹8,000 per month. If including October 2026 through March 2027 (six months), it is about ₹6,667 per month. These are arithmetic estimates only; enter actual income and essential expenses to judge affordability.
+
 ## 4. Important data limitation
 
 This version saves salary, budgets, expenses and goals in the browser's local storage on the current device. It does **not** yet synchronize between devices or accounts. Clearing browser data can erase records, so use **Export backup** regularly and keep the JSON backup somewhere safe.
