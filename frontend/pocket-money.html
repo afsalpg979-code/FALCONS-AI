@@ -231,13 +231,14 @@ document.addEventListener('click',e=>{
   const g=data.goals.find(a=>a.id===edit.dataset.editGoal);if(!g)return;
   const name=prompt('Target name:',g.name);if(name===null)return;
   const target=Number(prompt('Total target amount (₹):',String(g.target)));if(!Number.isFinite(target)||target<=0)return notice('Enter a valid target amount.');
+  const initialSaved=Number(prompt('Starting amount already saved / paid (₹):',String(Number.isFinite(Number(g.initialSaved))?Number(g.initialSaved):Number(g.saved||0))));if(!Number.isFinite(initialSaved)||initialSaved<0)return notice('Enter a valid starting saved amount.');
   const startMonth=prompt('Start month (YYYY-MM):',g.startMonth||monthNow());if(startMonth===null)return;
   const deadline=prompt('Deadline (YYYY-MM):',g.deadline||'');if(deadline===null)return;
   const type=prompt('Type: enter saving or payment',g.type||'saving');if(type===null)return;
   const priority=prompt('Priority: high, medium, or low',g.priority||'medium');if(priority===null)return;
   const monthlyPlan=Number(prompt('Planned monthly amount in ₹ (0 = auto estimate)',String(g.monthlyPlan||0)));if(!Number.isFinite(monthlyPlan)||monthlyPlan<0)return notice('Enter a valid monthly amount.');
   if(!/^\d{4}-\d{2}$/.test(startMonth)||!/^\d{4}-\d{2}$/.test(deadline)||deadline<startMonth||!['saving','payment'].includes(type)||!['high','medium','low'].includes(priority))return notice('Check dates, type and priority.');
-  g.name=name.trim()||g.name;g.target=target;g.startMonth=startMonth;g.deadline=deadline;g.type=type;g.priority=priority;g.monthlyPlan=monthlyPlan;save();render();notice('Target details updated.');
+  g.name=name.trim()||g.name;g.target=target;g.initialSaved=initialSaved;g.saved=initialSaved+(Array.isArray(g.contributions)?g.contributions.reduce((sum,item)=>sum+(Number(item.amount)||0),0):0);g.startMonth=startMonth;g.deadline=deadline;g.type=type;g.priority=priority;g.monthlyPlan=monthlyPlan;save();render();renderTargetsPage();notice('Target details updated.');
  }
  if(del){if(confirm('Delete this target and its contribution history?')){data.goals=data.goals.filter(a=>a.id!==del.dataset.deleteGoal);save();render();notice('Target deleted.')}}
  if(x){data.expenses=data.expenses.filter(a=>a.id!==x.dataset.deleteExpense);save();render();notice('Expense deleted.')}
