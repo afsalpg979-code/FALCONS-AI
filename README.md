@@ -94,6 +94,9 @@ OpenAI Responses API file and image inputs are used for multimodal analysis.
 The standalone Pocket Money workspace is available at `frontend/pocket-money.html`.
 
 - Create multiple savings goals or payment-obligation targets.
+- Set a target amount, starting month, deadline, priority (high/medium/low), and planned monthly contribution.
+- Pause or resume targets without deleting their history.
+- See an active-target count, total remaining across targets, planned monthly total, overdue notices, and warnings when a manually entered monthly plan may miss its deadline.
 - Set a target amount, starting month, and deadline.
 - Record the starting amount already saved or already paid.
 - Add dated contributions with optional notes; review recent contribution history.
