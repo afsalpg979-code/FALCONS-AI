@@ -4,6 +4,8 @@ Pocket Money is a mobile-friendly salary, budget, expense, and savings-goal work
 
 ## Pocket Money workspace
 
+**Deployment guide:** see [`DEPLOYMENT.md`](DEPLOYMENT.md) for GitHub Pages setup and phone installation.
+
 Open [`frontend/pocket-money.html`](frontend/pocket-money.html) in a browser to use the salary and savings tracker.
 
 - Record a different salary for every month (for example ₹30,000, ₹25,000, or ₹27,000).
