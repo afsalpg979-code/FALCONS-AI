@@ -22,7 +22,7 @@
 <div class="app">
 <header class="top">
 <div class="brand"><div class="logo">₹</div><div><h1>Pocket Money</h1><p>Build good money habits, one month at a time.</p></div></div>
-<div class="top-actions"><button class="btn" id="exportBtn">Export data</button><button class="btn" id="resetBtn">Reset demo</button></div>
+<div class="top-actions"><button class="btn" id="exportBtn">Export backup</button><button class="btn" id="importBtn" type="button">Import backup</button><input id="importFile" type="file" accept=".json,application/json" hidden><button class="btn" id="resetBtn">Reset data</button></div>
 </header>
 <div id="notice" class="notice" role="status"></div>
 <section class="hero">
@@ -157,6 +157,17 @@ document.getElementById('exportCsvBtn').addEventListener('click',()=>{
  data.goals.forEach(g=>rows.push(['Saving goal','',g.name,'Target '+g.target+'; saved '+g.saved,Number(g.saved)||0]));
  const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\r\\n');
  const url=URL.createObjectURL(new Blob(['\\ufeff'+csv],{type:'text/csv;charset=utf-8;'})),a=document.createElement('a');a.href=url;a.download='pocket-money-report-'+today()+'.csv';a.click();URL.revokeObjectURL(url);notice('CSV report exported.');
+});
+document.getElementById('importBtn').addEventListener('click',()=>document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change',async e=>{
+ const file=e.target.files&&e.target.files[0];if(!file)return;
+ try{
+  const imported=JSON.parse(await file.text());
+  if(!imported||typeof imported!=='object'||!imported.salaries||!imported.budgets||!Array.isArray(imported.expenses)||!Array.isArray(imported.goals))throw new Error('invalid');
+  if(!confirm('Import this backup and replace the data currently saved in this browser? Export a backup first if you want to keep the current data.'))return;
+  data=imported;selected=monthNow();save();render();notice('Backup imported successfully.');
+ }catch(err){notice('This file is not a valid Pocket Money JSON backup.')}
+ finally{e.target.value=''}
 });
 document.getElementById('exportBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='pocket-money-backup-'+today()+'.json';a.click();URL.revokeObjectURL(url);notice('Backup exported. Keep the file somewhere safe.')});
 document.getElementById('resetBtn').addEventListener('click',()=>{if(confirm('Reset all Pocket Money data saved in this browser? Export a backup first if you need it.')){data=fresh();selected=monthNow();save();render();notice('Demo data cleared.')}})
