@@ -75,10 +75,12 @@
 <div class="field"><label for="goalSaved">Already paid / saved (₹)</label><input id="goalSaved" type="number" min="0" step="0.01" value="0" required></div>
 <div class="field"><label for="goalStart">Start month</label><input id="goalStart" type="month" required></div>
 <div class="field"><label for="goalDeadline">Deadline</label><input id="goalDeadline" type="month" required></div>
-<div class="field full"><label for="goalType">Target type</label><select id="goalType"><option value="saving">Savings goal</option><option value="payment">Payment obligation (course fee, bill, etc.)</option></select></div>
+<div class="field"><label for="goalType">Target type</label><select id="goalType"><option value="saving">Savings goal</option><option value="payment">Payment obligation (course fee, bill, etc.)</option></select></div>
+<div class="field"><label for="goalPriority">Priority</label><select id="goalPriority"><option value="high">High priority</option><option value="medium" selected>Medium priority</option><option value="low">Low priority</option></select></div>
+<div class="field"><label for="goalMonthly">Planned monthly amount (₹)</label><input id="goalMonthly" type="number" min="0" step="0.01" value="0" placeholder="0 = calculate automatically"></div>
 </div><div class="form-actions"><button class="btn primary" type="submit">+ Create target</button></div>
 </form>
-<div id="goalList" class="goals" style="margin-top:14px"></div>
+<div class="report-grid" style="margin-top:14px"><div class="report-metric"><span>Active targets</span><strong id="targetActiveCount">0</strong></div><div class="report-metric"><span>Total remaining</span><strong id="targetRemainingTotal">₹0</strong></div><div class="report-metric"><span>Planned per month</span><strong id="targetMonthlyTotal">₹0</strong></div></div><div id="targetAlerts" style="margin-bottom:10px"></div><div id="goalList" class="goals"></div>
 </section>
 <section class="panel" id="activityPanel">
 <div class="panel-head"><h3>Recent expenses</h3><span id="txCount">0 records</span></div><div id="transactionList" class="transactions"></div>
@@ -130,19 +132,29 @@ function renderGoals(){
  const el=document.getElementById('goalList');
  if(!data.goals.length){el.innerHTML='<div class="empty">No targets yet. Create a course-fee, savings, emergency-fund or future-purchase target above.</div>';return}
  const current=monthNow();
+ const active=data.goals.filter(g=>!g.paused&&(Number(g.target)||0)>(Number(g.initialSaved??g.saved)||0)+(Array.isArray(g.contributions)?g.contributions.reduce((a,c)=>a+(Number(c.amount)||0),0):0));
+ let totalRemaining=0,totalMonthly=0;const alerts=[];
  el.innerHTML=data.goals.map(g=>{
-  g.type=g.type||'saving';g.startMonth=g.startMonth||current;g.deadline=g.deadline||'';
+  g.type=g.type||'saving';g.startMonth=g.startMonth||current;g.deadline=g.deadline||'';g.priority=g.priority||'medium';g.paused=!!g.paused;g.monthlyPlan=Number(g.monthlyPlan)||0;
   g.initialSaved=Number.isFinite(Number(g.initialSaved))?Number(g.initialSaved):Number(g.saved||0);
   g.contributions=Array.isArray(g.contributions)?g.contributions:[];
   g.saved=Number(g.initialSaved)+g.contributions.reduce((sum,c)=>sum+Number(c.amount||0),0);
   const target=Math.max(0,Number(g.target)||0),remaining=Math.max(0,target-g.saved),pct=target?Math.min(100,g.saved/target*100):0;
   const deadlinePassed=!!g.deadline&&g.deadline<current&&remaining>0;
   const monthsLeft=g.deadline?Math.max(1,monthDistance(current,g.deadline)+1):0;
-  const monthly=remaining===0?0:monthsLeft?Math.ceil(remaining/monthsLeft):0;
-  const status=remaining===0?'Completed':deadlinePassed?'Overdue':g.deadline?'Targeted for '+monthName(g.deadline):'No deadline set';
+  const suggested=remaining===0?0:monthsLeft?Math.ceil(remaining/monthsLeft):0;
+  const monthly=g.monthlyPlan>0?g.monthlyPlan:suggested;
+  totalRemaining+=remaining;if(!g.paused&&remaining>0)totalMonthly+=monthly;
+  if(deadlinePassed)alerts.push(g.name+' is overdue by deadline '+monthName(g.deadline)+'.');
+  else if(!g.paused&&remaining>0&&g.monthlyPlan>0&&g.monthlyPlan<suggested)alerts.push(g.name+': planned monthly amount may be too low for its deadline.');
+  const status=remaining===0?'Completed':g.paused?'Paused':deadlinePassed?'Overdue':g.deadline?'Targeted for '+monthName(g.deadline):'No deadline set';
   const history=g.contributions.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);
-  return '<div class="goal" style="align-items:flex-start"><div class="goal-main"><div class="goal-title">🎯 '+escapeHtml(g.name)+' <span style="font-size:10px;color:var(--muted);font-weight:600">· '+(g.type==='payment'?'PAYMENT':'SAVINGS')+'</span></div><div class="goal-meta">'+fmt(g.saved)+' of '+fmt(target)+' · '+Math.round(pct)+'% complete</div><div class="bar"><i style="width:'+pct+'%;background:'+(remaining===0?'#176b4b':deadlinePassed?'#cf5d57':'#4b9a70')+'"></i></div><div class="goal-meta">Remaining: <strong>'+fmt(remaining)+'</strong> · '+escapeHtml(status)+(monthly?' · Plan '+fmt(monthly)+'/month':'')+'</div><div class="goal-meta">Started '+escapeHtml(g.startMonth)+(g.deadline?' · Deadline '+escapeHtml(g.deadline):'')+'</div>'+(history.length?'<details style="margin-top:8px"><summary style="font-size:11px;cursor:pointer;color:var(--green)">Recent contributions ('+g.contributions.length+')</summary>'+history.map(c=>'<div class="goal-meta">'+escapeHtml(c.date||'No date')+' · '+fmt(c.amount)+' '+(c.note?'· '+escapeHtml(c.note):'')+'</div>').join('')+'</details>':'<div class="goal-meta">No contributions recorded yet; the starting amount is tracked separately.</div>')+'</div><div class="goal-right"><strong>'+Math.round(pct)+'%</strong><br><button data-add-contribution="'+g.id+'">+ Add</button><br><button data-edit-goal="'+g.id+'">Edit</button><br><button data-delete-goal="'+g.id+'" title="Delete target and its contribution history">Delete target</button></div></div>'
+  return '<div class="goal" style="align-items:flex-start"><div class="goal-main"><div class="goal-title">🎯 '+escapeHtml(g.name)+' <span style="font-size:10px;color:var(--muted);font-weight:600">· '+(g.type==='payment'?'PAYMENT':'SAVINGS')+' · '+escapeHtml(g.priority.toUpperCase())+'</span></div><div class="goal-meta">'+fmt(g.saved)+' of '+fmt(target)+' · '+Math.round(pct)+'% complete</div><div class="bar"><i style="width:'+pct+'%;background:'+(remaining===0?'#176b4b':deadlinePassed?'#cf5d57':'#4b9a70')+'"></i></div><div class="goal-meta">Remaining: <strong>'+fmt(remaining)+'</strong> · '+escapeHtml(status)+(monthly?' · Plan '+fmt(monthly)+'/month':'')+'</div><div class="goal-meta">Started '+escapeHtml(g.startMonth)+(g.deadline?' · Deadline '+escapeHtml(g.deadline):'')+'</div>'+(history.length?'<details style="margin-top:8px"><summary style="font-size:11px;cursor:pointer;color:var(--green)">Recent contributions ('+g.contributions.length+')</summary>'+history.map(c=>'<div class="goal-meta">'+escapeHtml(c.date||'No date')+' · '+fmt(c.amount)+' '+(c.note?'· '+escapeHtml(c.note):'')+'</div>').join('')+'</details>':'<div class="goal-meta">No contributions recorded yet; the starting amount is tracked separately.</div>')+'</div><div class="goal-right"><strong>'+Math.round(pct)+'%</strong><br><button data-add-contribution="'+g.id+'">+ Add</button><br><button data-toggle-goal="'+g.id+'">'+(g.paused?'Resume':'Pause')+'</button><br><button data-edit-goal="'+g.id+'">Edit</button><br><button data-delete-goal="'+g.id+'" title="Delete target and its contribution history">Delete target</button></div></div>'
  }).join('');
+ document.getElementById('targetActiveCount').textContent=active.length;
+ document.getElementById('targetRemainingTotal').textContent=fmt(totalRemaining);
+ document.getElementById('targetMonthlyTotal').textContent=fmt(totalMonthly);
+ document.getElementById('targetAlerts').innerHTML=alerts.length?'<div class="empty" style="text-align:left;border-color:#e9c7a3;color:var(--red)">⚠ '+alerts.map(escapeHtml).join('<br>')+'</div>':'';
 }
 function renderTransactions(){const list=expenses().slice().sort((a,b)=>b.date.localeCompare(a.date));document.getElementById('txCount').textContent=list.length+' records';document.getElementById('transactionList').innerHTML=list.length?list.slice(0,30).map(e=>{const c=cats.find(c=>c.id===e.category);return '<div class="tx"><div class="tx-main"><div class="tx-title">'+(c?c.icon+' ':'')+escapeHtml(e.note|| (c?c.name:'Expense'))+'</div><div class="tx-meta">'+e.date+' · '+(c?c.name:'Other')+'</div></div><div style="text-align:right"><strong style="font-size:13px">'+fmt(e.amount)+'</strong><br><button data-delete-expense="'+e.id+'">Delete</button></div></div>'}).join(''):'<div class="empty">No expenses for this month yet. Add your first expense.</div>'}
 function renderReports(){
@@ -172,9 +184,9 @@ document.getElementById('goalStart').value=monthNow();
 document.getElementById('goalDeadline').value=(function(){const d=new Date();d.setMonth(d.getMonth()+6);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')})();
 document.getElementById('goalForm').addEventListener('submit',e=>{
  e.preventDefault();
- const name=document.getElementById('goalName').value.trim(),target=Number(document.getElementById('goalTarget').value),saved=Number(document.getElementById('goalSaved').value),startMonth=document.getElementById('goalStart').value,deadline=document.getElementById('goalDeadline').value,type=document.getElementById('goalType').value;
+ const name=document.getElementById('goalName').value.trim(),target=Number(document.getElementById('goalTarget').value),saved=Number(document.getElementById('goalSaved').value),startMonth=document.getElementById('goalStart').value,deadline=document.getElementById('goalDeadline').value,type=document.getElementById('goalType').value,priority=document.getElementById('goalPriority').value,monthlyPlan=Number(document.getElementById('goalMonthly').value)||0;
  if(!name||target<=0||saved<0||!startMonth||!deadline||deadline<startMonth)return notice('Check target details and make sure the deadline is not before the start month.');
- data.goals.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),name,target,saved:saved,initialSaved:saved,startMonth,deadline,type,contributions:[],createdAt:today()});
+ data.goals.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),name,target,saved:saved,initialSaved:saved,startMonth,deadline,type,priority,monthlyPlan,paused:false,contributions:[],createdAt:today()});
  save();e.target.reset();document.getElementById('goalSaved').value='0';document.getElementById('goalStart').value=monthNow();document.getElementById('goalDeadline').value=(function(){const d=new Date();d.setMonth(d.getMonth()+6);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')})();render();notice('Target created and saved on this device.')
 });
 document.addEventListener('click',e=>{
@@ -189,6 +201,8 @@ document.addEventListener('click',e=>{
   g.contributions.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),amount,date,note:note.slice(0,100)});g.saved=g.initialSaved+g.contributions.reduce((sum,c)=>sum+Number(c.amount||0),0);
   save();render();notice('Contribution recorded in target history.');
  }
+ const toggle=e.target.closest('[data-toggle-goal]');
+ if(toggle){const g=data.goals.find(a=>a.id===toggle.dataset.toggleGoal);if(g){g.paused=!g.paused;save();render();notice(g.paused?'Target paused.':'Target resumed.');}}
  if(edit){
   const g=data.goals.find(a=>a.id===edit.dataset.editGoal);if(!g)return;
   const name=prompt('Target name:',g.name);if(name===null)return;
@@ -196,8 +210,10 @@ document.addEventListener('click',e=>{
   const startMonth=prompt('Start month (YYYY-MM):',g.startMonth||monthNow());if(startMonth===null)return;
   const deadline=prompt('Deadline (YYYY-MM):',g.deadline||'');if(deadline===null)return;
   const type=prompt('Type: enter saving or payment',g.type||'saving');if(type===null)return;
-  if(!/^\d{4}-\d{2}$/.test(startMonth)||!/^\d{4}-\d{2}$/.test(deadline)||deadline<startMonth||!['saving','payment'].includes(type))return notice('Check dates and choose saving or payment.');
-  g.name=name.trim()||g.name;g.target=target;g.startMonth=startMonth;g.deadline=deadline;g.type=type;save();render();notice('Target details updated.');
+  const priority=prompt('Priority: high, medium, or low',g.priority||'medium');if(priority===null)return;
+  const monthlyPlan=Number(prompt('Planned monthly amount in ₹ (0 = auto estimate)',String(g.monthlyPlan||0)));if(!Number.isFinite(monthlyPlan)||monthlyPlan<0)return notice('Enter a valid monthly amount.');
+  if(!/^\d{4}-\d{2}$/.test(startMonth)||!/^\d{4}-\d{2}$/.test(deadline)||deadline<startMonth||!['saving','payment'].includes(type)||!['high','medium','low'].includes(priority))return notice('Check dates, type and priority.');
+  g.name=name.trim()||g.name;g.target=target;g.startMonth=startMonth;g.deadline=deadline;g.type=type;g.priority=priority;g.monthlyPlan=monthlyPlan;save();render();notice('Target details updated.');
  }
  if(del){if(confirm('Delete this target and its contribution history?')){data.goals=data.goals.filter(a=>a.id!==del.dataset.deleteGoal);save();render();notice('Target deleted.')}}
  if(x){data.expenses=data.expenses.filter(a=>a.id!==x.dataset.deleteExpense);save();render();notice('Expense deleted.')}
