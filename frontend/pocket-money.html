@@ -151,7 +151,8 @@ function renderReports(){
  const rows=Array.from(months).sort().reverse().map(m=>{
    const income=Number(data.salaries[m]||0);
    const spent=data.expenses.filter(e=>e.date&&e.date.slice(0,7)===m).reduce((sum,e)=>sum+(Number(e.amount)||0),0);
-   const contributions=data.goals.reduce((sum,g)=>sum+(g.contributions||[]).filter(c=>c.date&&c.date.slice(0,7)===m).reduce((a,c)=>a+(Number(c.amount)||0),0),0);\n   return {month:m,income,spent,contributions,balance:income-spent-contributions};
+   const contributions=data.goals.reduce((sum,g)=>sum+(g.contributions||[]).filter(c=>c.date&&c.date.slice(0,7)===m).reduce((a,c)=>a+(Number(c.amount)||0),0),0);
+   return {month:m,income,spent,contributions,balance:income-spent-contributions};
  });
  const totalIncome=rows.reduce((s,r)=>s+r.income,0),totalSpent=rows.reduce((s,r)=>s+r.spent,0);
  document.getElementById('reportIncome').textContent=fmt(totalIncome);
@@ -208,8 +209,8 @@ document.getElementById('exportCsvBtn').addEventListener('click',()=>{
  Object.entries(data.budgets).forEach(([m,b])=>cats.forEach(c=>rows.push(['Budget',m,c.name,'Planned allocation',Number(b[c.id])||0])));
  data.expenses.forEach(e=>{const c=cats.find(c=>c.id===e.category);rows.push(['Expense',e.date,c?c.name:e.category,e.note||'',Number(e.amount)||0])});
  data.goals.forEach(g=>{rows.push(['Target','',g.type==='payment'?'Payment':'Saving',g.name+'; target '+g.target+'; current '+g.saved+'; remaining '+Math.max(0,Number(g.target)-Number(g.saved))+'; start '+(g.startMonth||'')+'; deadline '+(g.deadline||''),Number(g.saved)||0]);(g.contributions||[]).forEach(c=>rows.push(['Target contribution',c.date,g.name,c.note||'',Number(c.amount)||0]));});
- const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\r\\n');
- const url=URL.createObjectURL(new Blob(['\\ufeff'+csv],{type:'text/csv;charset=utf-8;'})),a=document.createElement('a');a.href=url;a.download='pocket-money-report-'+today()+'.csv';a.click();URL.revokeObjectURL(url);notice('CSV report exported.');
+ const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
+ const url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'})),a=document.createElement('a');a.href=url;a.download='pocket-money-report-'+today()+'.csv';a.click();URL.revokeObjectURL(url);notice('CSV report exported.');
 });
 document.getElementById('importBtn').addEventListener('click',()=>document.getElementById('importFile').click());
 document.getElementById('importFile').addEventListener('change',async e=>{
