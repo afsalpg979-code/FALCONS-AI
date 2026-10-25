@@ -37,7 +37,8 @@ jobs:
           cp frontend/pocket-money.html native-pocket-money/www/index.html
           cd native-pocket-money
           npm init -y
-          npm install @capacitor/core@^7 @capacitor/cli@^7 @capacitor/android@^7
+          npm install @capacitor/core@^7 @capacitor/cli@^7 @capacitor/android@^7 jsqr@^1.4.0
+          cp node_modules/jsqr/dist/jsQR.js www/vendor-jsqr.js
           cat > capacitor.config.json <<'EOF'
           {
             "appId": "com.falcons.pocketmoney",
@@ -46,6 +47,17 @@ jobs:
           }
           EOF
           npx cap add android
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("android/app/src/main/AndroidManifest.xml")
+          s = p.read_text()
+          if "android.permission.CAMERA" not in s:
+              pos = s.find(">")
+              if pos < 0:
+                  raise SystemExit("Could not find AndroidManifest root tag")
+              s = s[:pos+1] + '\n    <uses-permission android:name="android.permission.CAMERA" />' + s[pos+1:]
+              p.write_text(s)
+          PY
           npx cap sync android
 
       - name: Build debug APK
