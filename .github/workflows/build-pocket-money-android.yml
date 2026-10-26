@@ -52,9 +52,12 @@ jobs:
           p = Path("android/app/src/main/AndroidManifest.xml")
           s = p.read_text()
           if "android.permission.CAMERA" not in s:
-              pos = s.find(">")
+              start = s.find("<manifest")
+              if start < 0:
+                  raise SystemExit("Could not find AndroidManifest manifest root tag")
+              pos = s.find(">", start)
               if pos < 0:
-                  raise SystemExit("Could not find AndroidManifest root tag")
+                  raise SystemExit("Could not find end of AndroidManifest root tag")
               s = s[:pos+1] + '\n    <uses-permission android:name="android.permission.CAMERA" />' + s[pos+1:]
               p.write_text(s)
           PY
